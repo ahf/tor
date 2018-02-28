@@ -25,6 +25,7 @@ edge_connection_t *edge_connection_new(int type, int socket_family);
 entry_connection_t *entry_connection_new(int type, int socket_family);
 control_connection_t *control_connection_new(int socket_family);
 listener_connection_t *listener_connection_new(int type, int socket_family);
+stats_reporter_connection_t *stats_reporter_connection_new(int socket_family);
 connection_t *connection_new(int type, int socket_family);
 int connection_init_accepted_conn(connection_t *conn,
                                   const listener_connection_t *listener);

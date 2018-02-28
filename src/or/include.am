@@ -108,6 +108,7 @@ LIBTOR_A_SOURCES = \
 	src/or/scheduler_vanilla.c			\
 	src/or/statefile.c				\
 	src/or/status.c					\
+	src/or/stats_reporter.c				\
 	src/or/torcert.c				\
 	src/or/tor_api.c				\
 	src/or/onion_ntor.c				\
@@ -253,6 +254,7 @@ ORHEADERS = \
 	src/or/scheduler.h				\
 	src/or/statefile.h				\
 	src/or/status.h					\
+	src/or/stats_reporter.h				\
 	src/or/torcert.h				\
 	src/or/tor_api_internal.h
 

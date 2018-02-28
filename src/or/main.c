@@ -110,6 +110,8 @@
 #include "tor_api_internal.h"
 #include "util_process.h"
 #include "ext_orport.h"
+#include "stats_reporter.h"
+#include "stats_store.h"
 #ifdef USE_DMALLOC
 #include <dmalloc.h>
 #endif
@@ -513,6 +515,7 @@ reset_main_loop_counters(void)
 static void
 increment_main_loop_success_count(void)
 {
+  stats_store_update(STAT_MAIN_LOOP_SUCCESS, 1);
   ++stats_n_main_loop_successes;
 }
 
@@ -1342,6 +1345,7 @@ CALLBACK(clean_consdiffmgr);
 CALLBACK(reset_padding_counts);
 CALLBACK(check_canonical_channels);
 CALLBACK(hs_service);
+CALLBACK(emit_stats_reporter_events);
 
 #undef CALLBACK
 
@@ -1378,6 +1382,7 @@ static periodic_event_item_t periodic_events[] = {
   CALLBACK(reset_padding_counts),
   CALLBACK(check_canonical_channels),
   CALLBACK(hs_service),
+  CALLBACK(emit_stats_reporter_events),
   END_OF_PERIODIC_EVENTS
 };
 #undef CALLBACK
@@ -2275,6 +2280,17 @@ hs_service_callback(time_t now, const or_options_t *options)
  end:
   /* Every 1 second. */
   return 1;
+}
+
+/**
+ * Periodic callback: Emit stats reporter events.  This is called every
+ * StatsReporterGranularity seconds.
+ */
+static int
+emit_stats_reporter_events_callback(time_t now, const or_options_t *options)
+{
+  stats_reporter_emit_events(now);
+  return options->StatsReporterGranularity;
 }
 
 /** Timer: used to invoke second_elapsed_callback() once per second. */
@@ -3599,6 +3615,8 @@ tor_cleanup(void)
   dmalloc_log_unfreed();
   dmalloc_shutdown();
 #endif
+
+  stats_store_cleanup();
 }
 
 /** Read/create keys as needed, and echo our fingerprint to stdout. */
@@ -3999,6 +4017,9 @@ tor_run_main(const tor_main_configuration_t *tor_cfg)
 
   int argc = tor_cfg->argc;
   char **argv = tor_cfg->argv;
+
+  /* Initialize the stats store early since it's used in tor_malloc(). */
+  stats_store_init();
 
 #ifdef _WIN32
 #ifndef HeapEnableTerminationOnCorruption

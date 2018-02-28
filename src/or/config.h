@@ -22,6 +22,10 @@
  * expose more information than we're comfortable with. */
 #define MIN_HEARTBEAT_PERIOD (30*60)
 
+/** Lowest allowable value for StatsReporterGranularity.
+ * The value is defined in seconds. */
+#define MIN_STATS_REPORTER_GRANULARITY (5)
+
 MOCK_DECL(const char*, get_dirportfrontpage, (void));
 MOCK_DECL(const or_options_t *, get_options, (void));
 MOCK_DECL(or_options_t *, get_options_mutable, (void));
@@ -239,6 +243,7 @@ STATIC int options_validate(or_options_t *old_options,
 STATIC int parse_transport_line(const or_options_t *options,
                                 const char *line, int validate_only,
                                 int server);
+STATIC int parse_stats_reporter_line(const char *line, int validate_only);
 STATIC int consider_adding_dir_servers(const or_options_t *options,
                                        const or_options_t *old_options);
 STATIC void add_default_trusted_dir_authorities(dirinfo_type_t type);

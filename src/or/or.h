@@ -228,8 +228,10 @@ typedef enum {
 #define CONN_TYPE_EXT_OR_LISTENER 17
 /** Type for sockets listening for HTTP CONNECT tunnel connections. */
 #define CONN_TYPE_AP_HTTP_CONNECT_LISTENER 18
+/** Type for connections to a stats reporting service. */
+#define CONN_TYPE_STATS_REPORTER 19
 
-#define CONN_TYPE_MAX_ 19
+#define CONN_TYPE_MAX_ 20
 /* !!!! If _CONN_TYPE_MAX is ever over 31, we must grow the type field in
  * connection_t. */
 
@@ -1152,6 +1154,18 @@ typedef struct channel_tls_s channel_tls_t;
 
 typedef struct circuitmux_s circuitmux_t;
 
+/** Stats reporter protocols that are supported by
+ *  stats_reporter_connection_t.
+ **/
+typedef enum {
+  /** The Graphite stats reporting protocol. */
+  STATS_REPORTER_PROTOCOL_GRAPHITE,
+
+  /** An unknown stats reporting protocol. Used for different error
+   * conditions. */
+  STATS_REPORTER_PROTOCOL_UNKNOWN
+} stats_reporter_protocol_t;
+
 /** Parsed onion routing cell.  All communication between nodes
  * is via cells. */
 typedef struct cell_t {
@@ -1282,6 +1296,7 @@ typedef struct server_port_cfg_t {
 #define DIR_CONNECTION_MAGIC 0x9988ffeeu
 #define CONTROL_CONNECTION_MAGIC 0x8abc765du
 #define LISTENER_CONNECTION_MAGIC 0x1a1ac741u
+#define STATS_REPORTER_CONNECTION_MAGIC 0x0a0407c5
 
 struct buf_t;
 
@@ -1905,6 +1920,14 @@ typedef struct control_connection_t {
   char *incoming_cmd;
 } control_connection_t;
 
+/** Subtype of connection_t for a connection to a stats reporter service. */
+typedef struct stats_reporter_connection_t {
+  connection_t base_;
+
+  /** The protocol used for the given connection. */
+  stats_reporter_protocol_t protocol;
+} stats_reporter_connection_t;
+
 /** Cast a connection_t subtype pointer to a connection_t **/
 #define TO_CONN(c) (&(((c)->base_)))
 
@@ -1934,6 +1957,9 @@ static control_connection_t *TO_CONTROL_CONN(connection_t *);
 /** Convert a connection_t* to an listener_connection_t*; assert if the cast is
  * invalid. */
 static listener_connection_t *TO_LISTENER_CONN(connection_t *);
+/** Convert a connection_t* to a stats_reporter_connection_t*; assert if the
+ * cast is invalid. */
+static stats_reporter_connection_t *TO_STATS_REPORTER_CONN(connection_t *);
 
 static inline or_connection_t *TO_OR_CONN(connection_t *c)
 {
@@ -1970,6 +1996,13 @@ static inline listener_connection_t *TO_LISTENER_CONN(connection_t *c)
 {
   tor_assert(c->magic == LISTENER_CONNECTION_MAGIC);
   return DOWNCAST(listener_connection_t, c);
+}
+
+static inline stats_reporter_connection_t *
+TO_STATS_REPORTER_CONN(connection_t *c)
+{
+  tor_assert(c->magic == STATS_REPORTER_CONNECTION_MAGIC);
+  return DOWNCAST(stats_reporter_connection_t, c);
 }
 
 /** What action type does an address policy indicate: accept or reject? */
@@ -3867,6 +3900,15 @@ typedef struct {
   int BridgeRelay; /**< Boolean: are we acting as a bridge relay? We make
                     * this explicit so we can change how we behave in the
                     * future. */
+
+  /** List of stats reporters. */
+  config_line_t *StatsReporter;
+
+  /** Prefix to use in StatsReporter protocols. */
+  char *StatsReporterPrefix;
+
+  /** Stats reporter granularity (in seconds). */
+  int StatsReporterGranularity;
 
   /** Boolean: if we know the bridge's digest, should we get new
    * descriptors from the bridge authorities or from the bridge itself? */

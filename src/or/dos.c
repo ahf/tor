@@ -16,6 +16,7 @@
 #include "networkstatus.h"
 #include "nodelist.h"
 #include "router.h"
+#include "stats_store.h"
 
 #include "dos.h"
 
@@ -483,6 +484,7 @@ dos_cc_new_create_cell(channel_t *chan)
     if (entry->dos_stats.cc_stats.marked_until_ts == 0) {
       log_debug(LD_DOS, "Detected circuit creation DoS by address: %s",
                 fmt_addr(&addr));
+      stats_store_update(STAT_DOS_MARKED_ADDRESSES, 1);
       cc_num_marked_addrs++;
     }
     cc_mark_client(&entry->dos_stats.cc_stats);
@@ -511,6 +513,7 @@ dos_cc_get_defense_type(channel_t *chan)
     /* We've just assess that this circuit should trigger a defense for the
      * cell it just seen. Note it down. */
     cc_num_rejected_cells++;
+    stats_store_update(STAT_DOS_REJECTED_CELLS, 1);
     return dos_cc_defense_type;
   }
 

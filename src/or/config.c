@@ -102,6 +102,7 @@
 #include "routerset.h"
 #include "scheduler.h"
 #include "statefile.h"
+#include "stats_reporter.h"
 #include "transports.h"
 #include "ext_orport.h"
 #ifdef _WIN32
@@ -383,6 +384,9 @@ static config_var_t option_vars_[] = {
   V(HardwareAccel,               BOOL,     "0"),
   V(HeartbeatPeriod,             INTERVAL, "6 hours"),
   V(MainloopStats,               BOOL,     "0"),
+  V(StatsReporter,               LINELIST, NULL),
+  V(StatsReporterGranularity,    INTERVAL, "30 seconds"),
+  V(StatsReporterPrefix,         STRING,   NULL),
   V(AccelName,                   STRING,   NULL),
   V(AccelDir,                    FILENAME, NULL),
   V(HashedControlPassword,       LINELIST, NULL),
@@ -1954,6 +1958,18 @@ options_act(const or_options_t *old_options)
       init_ext_or_cookie_authentication(!!options->ExtORPort_lines) < 0) {
     log_warn(LD_CONFIG,"Error creating Extended ORPort cookie file.");
     return -1;
+  }
+
+  if (! options->DisableNetwork) {
+    for (cl = options->StatsReporter; cl; cl = cl->next) {
+      if (parse_stats_reporter_line(cl->value, 0) < 0) {
+        // LCOV_EXCL_START
+        log_warn(LD_BUG, "Previously validated StatsReporter line "
+                         "could not be added.");
+        return -1;
+        // LCOV_EXCL_STOP
+      }
+    }
   }
 
   mark_transport_list();
@@ -4279,6 +4295,26 @@ options_validate(or_options_t *old_options, or_options_t *options,
     smartlist_free(options_sl);
   }
 
+  if (options->StatsReporterPrefix) {
+    if (! stats_reporter_is_valid_prefix(options->StatsReporterPrefix)) {
+      tor_asprintf(msg,
+          "StatsReporterPrefix '%s' must contain only the characters [a-zA-Z0-9.].",
+          options->StatsReporterPrefix);
+      return -1;
+    }
+  }
+
+  for (cl = options->StatsReporter; cl; cl = cl->next) {
+    if (parse_stats_reporter_line(cl->value, 1) < 0)
+      REJECT("Invalid stats reporter line. See logs for details.");
+  }
+
+  if (options->StatsReporterGranularity < MIN_STATS_REPORTER_GRANULARITY) {
+    log_warn(LD_CONFIG, "StatsReporterGranularity option is too short; "
+                        "raising to %d seconds.", MIN_STATS_REPORTER_GRANULARITY);
+    options->StatsReporterGranularity = MIN_STATS_REPORTER_GRANULARITY;
+  }
+
   if (options->ConstrainedSockets) {
     /* If the user wants to constrain socket buffer use, make sure the desired
      * limit is between MIN|MAX_TCPSOCK_BUFFER in k increments. */
@@ -5983,6 +6019,71 @@ parse_bridge_line(const char *line)
   tor_free(fingerprint);
 
   return bridge_line;
+}
+
+/** Read the contents of a StatsReporter line from <b>line</b>. Return 0 if the
+ * line is well-formed, and -1 if it isn't.
+ **/
+STATIC int
+parse_stats_reporter_line(const char *line, int validate_only)
+{
+  smartlist_t *items;
+  size_t items_count;
+  int r;
+  char *addr_port;
+  tor_addr_t addr;
+  uint16_t port;
+  char *protocol;
+
+  /* Split the line up. */
+  items = smartlist_new();
+  smartlist_split_string(items, line, NULL,
+                         SPLIT_SKIP_SPACE|SPLIT_IGNORE_BLANK, -1);
+  items_count = smartlist_len(items);
+
+  if (items_count < 2) {
+    log_warn(LD_CONFIG, "Too few arguments on StatsReporter line.");
+    goto err;
+  }
+
+  /* Validate reporter protocol. */
+  protocol = smartlist_get(items, 0);
+
+  if (! stats_reporter_is_valid_protocol(protocol)) {
+    log_warn(LD_CONFIG, "Unknown StatsReporter protocol '%s", protocol);
+    goto err;
+  }
+
+  /* Validate IP and port tuple. */
+  addr_port = smartlist_get(items, 1);
+
+  if (tor_addr_port_lookup(addr_port, &addr, &port) < 0) {
+    log_warn(LD_CONFIG, "Unable to parse StatsReporter address '%s'.",
+             addr_port);
+    goto err;
+  }
+
+  if (! port) {
+    log_warn(LD_CONFIG, "StatsReporter address '%s' is missing a port.",
+             addr_port);
+    goto err;
+  }
+
+  /* Add the connection to the stats reporting subsystem. */
+  if (! validate_only)
+    stats_reporter_add_from_config(&addr, port, protocol);
+
+  r = 0;
+  goto done;
+
+ err:
+  r = -1;
+
+ done:
+  SMARTLIST_FOREACH(items, char*, s, tor_free(s));
+  smartlist_free(items);
+
+  return r;
 }
 
 /** Read the contents of a ClientTransportPlugin or ServerTransportPlugin

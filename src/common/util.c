@@ -24,6 +24,7 @@
 #include "backtrace.h"
 #include "util_process.h"
 #include "util_format.h"
+#include "stats_store.h"
 
 #ifdef _WIN32
 #include <io.h>
@@ -159,6 +160,10 @@ tor_malloc_(size_t size DMALLOC_PARAMS)
     exit(1); // exit ok: alloc failed.
     /* LCOV_EXCL_STOP */
   }
+
+  stats_store_update(STAT_MALLOC_BYTES, size);
+  stats_store_update(STAT_MALLOC_COUNT, 1);
+
   return result;
 }
 
@@ -247,6 +252,10 @@ tor_realloc_(void *ptr, size_t size DMALLOC_PARAMS)
     exit(1); // exit ok: alloc failed.
     /* LCOV_EXCL_STOP */
   }
+
+  stats_store_update(STAT_REALLOC_BYTES, size);
+  stats_store_update(STAT_REALLOC_COUNT, 1);
+
   return result;
 }
 
