@@ -49,7 +49,6 @@ addons:
       - libscrypt-dev
       ## Cross-compile for win32
       - gcc-mingw-w64-i686
-      - libz-mingw-w64-dev
       ## zstd doesn't exist in Ubuntu Trusty
       #- libzstd
 
