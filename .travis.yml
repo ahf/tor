@@ -47,6 +47,9 @@ addons:
       ## Optional dependencies
       - liblzma-dev
       - libscrypt-dev
+      ## Cross-compile for win32
+      - gcc-mingw-w64-i686
+      - libz-mingw-w64-dev
       ## zstd doesn't exist in Ubuntu Trusty
       #- libzstd
 
@@ -56,6 +59,7 @@ addons:
 ##  * with GCC, without Rust
 ##  * with Clang, with Rust
 ##  * with Clang, without Rust
+##  * with GCC (MinGW cross-compile for win32), without Rust
 env:
   global:
     ## The Travis CI environment allows us two cores, so let's use both.
@@ -112,6 +116,8 @@ matrix:
     - compiler: clang
       sudo: required
       env: RUST_OPTIONS=""
+    - compiler: i686-w64-mingw32
+      sudo: required
 
 before_install:
   ## If we're on OSX, homebrew usually needs to updated first
