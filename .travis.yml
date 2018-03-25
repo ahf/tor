@@ -118,6 +118,7 @@ matrix:
       env: RUST_OPTIONS=""
     - compiler: i686-w64-mingw32
       sudo: required
+      env: RUST_OPTIONS=""
 
 before_install:
   ## If we're on OSX, homebrew usually needs to updated first
