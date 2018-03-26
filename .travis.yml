@@ -154,5 +154,7 @@ script:
   - make check
 
 after_failure:
+  ## configure will have details in config.log
+  - cat config.log
   ## `make check` will leave a log file with more details of test failures.
   - cat test-suite.log
