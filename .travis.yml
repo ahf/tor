@@ -115,7 +115,7 @@ matrix:
     - compiler: clang
       sudo: required
       env: RUST_OPTIONS=""
-    - compiler: i686-w64-mingw32
+    - compiler: i686-w64-mingw32-gcc
       sudo: required
       env: RUST_OPTIONS="" HOST_OPTIONS="--host=i686-w64-mingw32"
 
