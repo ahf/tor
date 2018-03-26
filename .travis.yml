@@ -117,7 +117,7 @@ matrix:
       env: RUST_OPTIONS=""
     - compiler: i686-w64-mingw32
       sudo: required
-      env: RUST_OPTIONS=""
+      env: RUST_OPTIONS="" HOST_OPTIONS="--host=i686-w64-mingw32"
 
 before_install:
   ## If we're on OSX, homebrew usually needs to updated first
@@ -149,7 +149,7 @@ install:
 
 script:
   - ./autogen.sh
-  - ./configure $RUST_OPTIONS --disable-asciidoc --enable-fatal-warnings --disable-silent-rules --enable-fragile-hardening
+  - ./configure $RUST_OPTIONS $HOST_OPTIONS --disable-asciidoc --enable-fatal-warnings --disable-silent-rules --enable-fragile-hardening
   ## We run `make check` because that's what https://jenkins.torproject.org does.
   - make check
 
