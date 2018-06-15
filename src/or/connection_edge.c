@@ -578,8 +578,8 @@ connection_edge_finished_connecting(edge_connection_t *edge_conn)
 
   /* Maybe send the HA Proxy header. */
   char buf[512];
-  uint16_t a;
-  uint16_t b;
+  uint16_t a = 0;
+  uint16_t b = 0;
 
   if (edge_conn->on_circuit != NULL) {
     uint32_t gid = TO_ORIGIN_CIRCUIT(edge_conn->on_circuit)->global_identifier;
