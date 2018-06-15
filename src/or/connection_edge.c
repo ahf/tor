@@ -575,10 +575,26 @@ connection_edge_finished_connecting(edge_connection_t *edge_conn)
   rep_hist_note_exit_stream_opened(conn->port);
 
   conn->state = EXIT_CONN_STATE_OPEN;
+
+  /* Maybe send the HA Proxy header. */
+  char buf[512];
+  uint16_t a;
+  uint16_t b;
+
+  if (edge_conn->on_circuit != NULL) {
+    uint32_t gid = TO_ORIGIN_CIRCUIT(edge_conn->on_circuit)->global_identifier;
+    a = gid >> 16;
+    b = gid & 0x0000ffff;
+  }
+
+  tor_snprintf(buf, sizeof(buf), "PROXY TCP6 2001::1 2001::2 %d %d\r\n", a, b);
+  connection_buf_add(buf, strlen(buf), conn);
+
   connection_watch_events(conn, READ_EVENT); /* stop writing, keep reading */
   if (connection_get_outbuf_len(conn)) /* in case there are any queued relay
                                         * cells */
     connection_start_writing(conn);
+
   /* deliver a 'connected' relay cell back through the circuit. */
   if (connection_edge_is_rendezvous_stream(edge_conn)) {
     if (connection_edge_send_command(edge_conn,
