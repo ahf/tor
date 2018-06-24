@@ -43,6 +43,10 @@
 
 #define DEBUGGING_CLOSE
 
+#if defined(__APPLE__)
+int sandbox_init_with_parameters(const char *profile, uint64_t flags, const char *const parameters[], char **errorbuf);
+#endif
+
 #if defined(USE_LIBSECCOMP)
 
 #include <sys/mman.h>
@@ -1861,7 +1865,7 @@ register_cfg(sandbox_cfg_t* cfg)
 
 #endif /* defined(USE_LIBSECCOMP) */
 
-#ifdef USE_LIBSECCOMP
+#if defined(USE_LIBSECCOMP)
 /**
  * Initialises the syscall sandbox filter for any linux architecture, taking
  * into account various available features for different linux flavours.
@@ -1889,7 +1893,84 @@ sandbox_is_active(void)
 {
   return sandbox_active != 0;
 }
-#endif /* defined(USE_LIBSECCOMP) */
+
+#elif defined(__APPLE__)
+
+static int
+initialise_macos_sandbox(sandbox_cfg_t *cfg)
+{
+  (void)cfg;
+
+  char *error_buffer;
+  int ret;
+  smartlist_t *params;
+
+  // Setup parameters.
+  params = smartlist_new();
+
+  // DataDirectory
+  smartlist_add(params, (char *)"TOR_DATA_DIRECTORY");
+  smartlist_add(params, (char *)"/Users/ahf/tor-hs");
+
+  // Log to dmesg.
+  smartlist_add(params, (char *)"TOR_LOG");
+  smartlist_add(params, (char *)"TRUE");
+
+  // End with a null.
+  smartlist_add(params, NULL);
+
+  ret = sandbox_init_with_parameters(
+            // Version.
+            "(version 1)\n"
+
+            // Variables.
+            "(define tor-data-dir (param \"TOR_DATA_DIRECTORY\"))\n"
+            "(define tor-log (param \"TOR_LOG\"))                \n"
+
+            // Deny by default, but maybe log?
+            "(if (string=? tor-log \"TRUE\")  \n"
+            "  (deny default)                 \n"
+            "  (deny default (with no-log)))  \n"
+
+            // Read from crypto devices.
+            "(allow file-read*           \n"
+            "  (literal \"/dev/urandom\")\n"
+            "  (literal \"/dev/random\"))\n"
+
+            // Use shared libraries.
+            "(if (defined? 'file-map-executable)      \n"
+            "  (allow file-map-executable file-read*  \n"
+            "   (subpath \"/usr/lib\"))               \n"
+            "  (allow file-read*                      \n"
+            "   (subpath \"/usr/lib\")))              \n"
+
+            // Allow outbound network
+            "(allow network-outbound \n"
+            "  (remote tcp))         \n"
+
+            // Allow write to our data directory.
+            "(allow file-read* file-write-create file-write-data file-write-unlink\n"
+            "  (subpath tor-data-dir))                                            \n"
+
+              , 0, (const char * const *)params->list, &error_buffer);
+
+  smartlist_free(params);
+
+  log_notice(LD_GENERAL, "Initialising experimental MacOS Sandbox");
+
+  if (ret) {
+    if (error_buffer != NULL) {
+        log_warn(LD_GENERAL, "Unable to initialise MacOS sandbox: %s", error_buffer);
+        free(error_buffer);
+    }
+
+    return 1;
+  }
+
+  return 0;
+}
+
+#endif
 
 sandbox_cfg_t*
 sandbox_cfg_new(void)
@@ -1898,7 +1979,7 @@ sandbox_cfg_new(void)
 }
 
 int
-sandbox_init(sandbox_cfg_t *cfg)
+sandbox_init_tor(sandbox_cfg_t *cfg)
 {
 #if defined(USE_LIBSECCOMP)
   return initialise_libseccomp_sandbox(cfg);
@@ -1910,6 +1991,9 @@ sandbox_init(sandbox_cfg_t *cfg)
            "build with support for sandboxing on Linux, you must have "
            "libseccomp and its necessary header files (e.g. seccomp.h).");
   return 0;
+
+#elif defined(__APPLE__)
+  return initialise_macos_sandbox(cfg);
 
 #else
   (void)cfg;
@@ -1973,5 +2057,5 @@ void
 sandbox_disable_getaddrinfo_cache(void)
 {
 }
-#endif /* !defined(USE_LIBSECCOMP) */
+#endif
 

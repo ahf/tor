@@ -163,7 +163,7 @@ int sandbox_cfg_allow_openat_filename(sandbox_cfg_t **cfg, char *file);
 int sandbox_cfg_allow_stat_filename(sandbox_cfg_t **cfg, char *file);
 
 /** Function used to initialise a sandbox configuration.*/
-int sandbox_init(sandbox_cfg_t* cfg);
+int sandbox_init_tor(sandbox_cfg_t* cfg);
 
 /** Return true iff the sandbox is turned on. */
 int sandbox_is_active(void);

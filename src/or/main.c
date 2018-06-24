@@ -4255,7 +4255,7 @@ tor_run_main(const tor_main_configuration_t *tor_cfg)
   if (get_options()->Sandbox && get_options()->command == CMD_RUN_TOR) {
     sandbox_cfg_t* cfg = sandbox_init_filter();
 
-    if (sandbox_init(cfg)) {
+    if (sandbox_init_tor(cfg)) {
       log_err(LD_BUG,"Failed to create syscall sandbox filter");
       return -1;
     }
