@@ -47,14 +47,6 @@ typedef struct sandbox_cfg_elem sandbox_cfg_t;
 #define PARAM_NUM 1
 
 /**
- * Enum used to manage the type of the implementation for general purpose.
- */
-typedef enum {
-  /** Libseccomp implementation based on seccomp2*/
-  LIBSECCOMP2 = 0
-} SB_IMPL;
-
-/**
  *  Configuration parameter structure associated with the LIBSECCOMP2
  *  implementation.
  */
@@ -78,9 +70,6 @@ typedef struct smp_param {
  * parameters for open, openat, execve, stat64.
  */
 struct sandbox_cfg_elem {
-  /** Sandbox implementation which dictates the parameter type. */
-  SB_IMPL implem;
-
   /** Configuration parameter. */
   smp_param_t *param;
 
