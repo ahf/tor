@@ -43,9 +43,6 @@ typedef struct sandbox_cfg_elem sandbox_cfg_t;
 #include <seccomp.h>
 #include <netdb.h>
 
-#define PARAM_PTR 0
-#define PARAM_NUM 1
-
 /**
  *  Configuration parameter structure associated with the LIBSECCOMP2
  *  implementation.
