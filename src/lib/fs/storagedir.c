@@ -101,7 +101,7 @@ storage_dir_free_(storage_dir_t *d)
  * one by one.
  */
 int
-storage_dir_register_with_sandbox(storage_dir_t *d, sandbox_cfg_t **cfg)
+storage_dir_register_with_sandbox(storage_dir_t *d, sandbox_cfg_t *cfg)
 {
   int problems = 0;
   int idx;

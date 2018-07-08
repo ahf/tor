@@ -118,6 +118,10 @@
 
 #endif /* defined(__i386__) || ... */
 
+/** Function pointer defining the prototype of a filter function.*/
+typedef int (*sandbox_filter_func_t)(scmp_filter_ctx ctx,
+                                     sandbox_cfg_t *filter);
+
 /**Determines if at least one sandbox is active.*/
 static int sandbox_active = 0;
 /** Holds the parameter list configuration for the sandbox.*/
@@ -471,14 +475,11 @@ static int
 sb_open(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 {
   int rc;
-  sandbox_cfg_t *elem = NULL;
 
   int use_openat = libc_uses_openat_for_everything();
 
   // for each dynamic parameter filters
-  for (elem = filter; elem != NULL; elem = elem->next) {
-    smp_param_t *param = elem->param;
-
+  SMARTLIST_FOREACH_BEGIN(filter->parameters, smp_param_t *, param) {
     if (param != NULL && param->prot == 1 && param->syscall
         == SCMP_SYS(open)) {
       rc = allow_file_open(ctx, use_openat, param->value);
@@ -488,7 +489,7 @@ sb_open(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
         return rc;
       }
     }
-  }
+  } SMARTLIST_FOREACH_END(param);
 
   rc = seccomp_rule_add_1(ctx, SCMP_ACT_ERRNO(EACCES), SCMP_SYS(open),
                 SCMP_CMP_MASKED(1, O_CLOEXEC|O_NONBLOCK|O_NOCTTY|O_NOFOLLOW,
@@ -515,12 +516,9 @@ static int
 sb_chmod(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 {
   int rc;
-  sandbox_cfg_t *elem = NULL;
 
   // for each dynamic parameter filters
-  for (elem = filter; elem != NULL; elem = elem->next) {
-    smp_param_t *param = elem->param;
-
+  SMARTLIST_FOREACH_BEGIN(filter->parameters, smp_param_t *, param) {
     if (param != NULL && param->prot == 1 && param->syscall
         == SCMP_SYS(chmod)) {
       rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(chmod),
@@ -531,7 +529,7 @@ sb_chmod(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
         return rc;
       }
     }
-  }
+  } SMARTLIST_FOREACH_END(param);
 
   return 0;
 }
@@ -540,12 +538,9 @@ static int
 sb_chown(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 {
   int rc;
-  sandbox_cfg_t *elem = NULL;
 
   // for each dynamic parameter filters
-  for (elem = filter; elem != NULL; elem = elem->next) {
-    smp_param_t *param = elem->param;
-
+  SMARTLIST_FOREACH_BEGIN(filter->parameters, smp_param_t *, param) {
     if (param != NULL && param->prot == 1 && param->syscall
         == SCMP_SYS(chown)) {
       rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(chown),
@@ -556,7 +551,7 @@ sb_chown(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
         return rc;
       }
     }
-  }
+  } SMARTLIST_FOREACH_END(param);
 
   return 0;
 }
@@ -586,12 +581,9 @@ static int
 sb_rename(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 {
   int rc;
-  sandbox_cfg_t *elem = NULL;
 
   // for each dynamic parameter filters
-  for (elem = filter; elem != NULL; elem = elem->next) {
-    smp_param_t *param = elem->param;
-
+  SMARTLIST_FOREACH_BEGIN(filter->parameters, smp_param_t *, param) {
     if (param != NULL && param->prot == 1 &&
         param->syscall == SCMP_SYS(rename)) {
 
@@ -604,7 +596,7 @@ sb_rename(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
         return rc;
       }
     }
-  }
+  } SMARTLIST_FOREACH_END(param);
 
   return 0;
 }
@@ -617,12 +609,9 @@ static int
 sb_openat(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 {
   int rc;
-  sandbox_cfg_t *elem = NULL;
 
   // for each dynamic parameter filters
-  for (elem = filter; elem != NULL; elem = elem->next) {
-    smp_param_t *param = elem->param;
-
+  SMARTLIST_FOREACH_BEGIN(filter->parameters, smp_param_t *, param) {
     if (param != NULL && param->prot == 1 && param->syscall
         == SCMP_SYS(openat)) {
       rc = seccomp_rule_add_3(ctx, SCMP_ACT_ALLOW, SCMP_SYS(openat),
@@ -636,7 +625,7 @@ sb_openat(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
         return rc;
       }
     }
-  }
+  } SMARTLIST_FOREACH_END(param);
 
   return 0;
 }
@@ -1089,12 +1078,9 @@ static int
 sb_stat64(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 {
   int rc = 0;
-  sandbox_cfg_t *elem = NULL;
 
   // for each dynamic parameter filters
-  for (elem = filter; elem != NULL; elem = elem->next) {
-    smp_param_t *param = elem->param;
-
+  SMARTLIST_FOREACH_BEGIN(filter->parameters, smp_param_t *, param) {
     if (param != NULL && param->prot == 1 && (param->syscall == SCMP_SYS(open)
         || param->syscall == SCMP_SYS(stat64))) {
       rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(stat64),
@@ -1105,7 +1091,7 @@ sb_stat64(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
         return rc;
       }
     }
-  }
+  } SMARTLIST_FOREACH_END(param);
 
   return 0;
 }
@@ -1168,14 +1154,13 @@ static sandbox_filter_func_t filter_func[] = {
 const char *
 sandbox_intern_string(const char *str)
 {
-  sandbox_cfg_t *elem;
-
   if (str == NULL)
     return NULL;
 
-  for (elem = filter_dynamic; elem != NULL; elem = elem->next) {
-    smp_param_t *param = elem->param;
+  if (filter_dynamic == NULL)
+    goto err;
 
+  SMARTLIST_FOREACH_BEGIN(filter_dynamic->parameters, smp_param_t *, param) {
     if (param->prot) {
       if (!strcmp(str, (char*)(param->value))) {
         return (char*)param->value;
@@ -1184,10 +1169,12 @@ sandbox_intern_string(const char *str)
         return (char*)param->value2;
       }
     }
-  }
+  } SMARTLIST_FOREACH_END(param);
 
+ err:
   if (sandbox_active)
     log_warn(LD_BUG, "No interned sandbox parameter found for %s", str);
+
   return str;
 }
 
@@ -1247,15 +1234,14 @@ prot_strings(scmp_filter_ctx ctx, sandbox_cfg_t* cfg)
   int ret = 0;
   size_t pr_mem_size = 0, pr_mem_left = 0;
   char *pr_mem_next = NULL, *pr_mem_base;
-  sandbox_cfg_t *el = NULL;
   strmap_t *locations = NULL;
 
   // get total number of bytes required to mmap. (Overestimate.)
-  for (el = cfg; el != NULL; el = el->next) {
-    pr_mem_size += strlen((char*) el->param->value) + 1;
-    if (el->param->value2)
-      pr_mem_size += strlen((char*) el->param->value2) + 1;
-  }
+  SMARTLIST_FOREACH_BEGIN(cfg->parameters, smp_param_t *, param) {
+    pr_mem_size += strlen((char *)param->value) + 1;
+    if (param->value2)
+      pr_mem_size += strlen((char *)param->value2) + 1;
+  } SMARTLIST_FOREACH_END(param);
 
   // allocate protected memory with MALLOC_MP_LIM canary
   pr_mem_base = (char*) mmap(NULL, MALLOC_MP_LIM + pr_mem_size,
@@ -1273,19 +1259,19 @@ prot_strings(scmp_filter_ctx ctx, sandbox_cfg_t* cfg)
   locations = strmap_new();
 
   // change el value pointer to protected
-  for (el = cfg; el != NULL; el = el->next) {
+  SMARTLIST_FOREACH_BEGIN(cfg->parameters, smp_param_t *, param) {
     if (prot_strings_helper(locations, &pr_mem_next, &pr_mem_left,
-                            &el->param->value) < 0) {
+                            &param->value) < 0) {
       ret = -2;
       goto out;
     }
     if (prot_strings_helper(locations, &pr_mem_next, &pr_mem_left,
-                            &el->param->value2) < 0) {
+                            &param->value2) < 0) {
       ret = -2;
       goto out;
     }
-    el->param->prot = 1;
-  }
+    param->prot = 1;
+  } SMARTLIST_FOREACH_END(param);
 
   // protecting from writes
   if (mprotect(pr_mem_base, MALLOC_MP_LIM + pr_mem_size, PROT_READ)) {
@@ -1354,23 +1340,21 @@ prot_strings(scmp_filter_ctx ctx, sandbox_cfg_t* cfg)
  * with the 'prot' field set to false, as the pointer is not protected at this
  * point.
  */
-static sandbox_cfg_t*
+static smp_param_t *
 new_element2(int syscall, char *value, char *value2)
 {
   smp_param_t *param = NULL;
 
-  sandbox_cfg_t *elem = tor_malloc_zero(sizeof(sandbox_cfg_t));
-  param = elem->param = tor_malloc_zero(sizeof(smp_param_t));
-
+  param = tor_malloc_zero(sizeof(smp_param_t));
   param->syscall = syscall;
   param->value = value;
   param->value2 = value2;
   param->prot = 0;
 
-  return elem;
+  return param;
 }
 
-static sandbox_cfg_t*
+static smp_param_t *
 new_element(int syscall, char *value)
 {
   return new_element2(syscall, value, NULL);
@@ -1383,79 +1367,67 @@ new_element(int syscall, char *value)
 #endif
 
 int
-sandbox_cfg_allow_stat_filename(sandbox_cfg_t **cfg, char *file)
+sandbox_cfg_allow_stat_filename(sandbox_cfg_t *cfg, char *file)
 {
-  sandbox_cfg_t *elem = NULL;
+  smp_param_t *param = NULL;
 
-  elem = new_element(SCMP_stat, file);
-
-  elem->next = *cfg;
-  *cfg = elem;
+  param = new_element(SCMP_stat, file);
+  smartlist_add(cfg->parameters, param);
 
   return 0;
 }
 
 int
-sandbox_cfg_allow_open_filename(sandbox_cfg_t **cfg, char *file)
+sandbox_cfg_allow_open_filename(sandbox_cfg_t *cfg, char *file)
 {
-  sandbox_cfg_t *elem = NULL;
+  smp_param_t *param = NULL;
 
-  elem = new_element(SCMP_SYS(open), file);
-
-  elem->next = *cfg;
-  *cfg = elem;
+  param = new_element(SCMP_SYS(open), file);
+  smartlist_add(cfg->parameters, param);
 
   return 0;
 }
 
 int
-sandbox_cfg_allow_chmod_filename(sandbox_cfg_t **cfg, char *file)
+sandbox_cfg_allow_chmod_filename(sandbox_cfg_t *cfg, char *file)
 {
-  sandbox_cfg_t *elem = NULL;
+  smp_param_t *param = NULL;
 
-  elem = new_element(SCMP_SYS(chmod), file);
-
-  elem->next = *cfg;
-  *cfg = elem;
+  param = new_element(SCMP_SYS(chmod), file);
+  smartlist_add(cfg->parameters, param);
 
   return 0;
 }
 
 int
-sandbox_cfg_allow_chown_filename(sandbox_cfg_t **cfg, char *file)
+sandbox_cfg_allow_chown_filename(sandbox_cfg_t *cfg, char *file)
 {
-  sandbox_cfg_t *elem = NULL;
+  smp_param_t *param = NULL;
 
-  elem = new_element(SCMP_SYS(chown), file);
-
-  elem->next = *cfg;
-  *cfg = elem;
+  param = new_element(SCMP_SYS(chown), file);
+  smartlist_add(cfg->parameters, param);
 
   return 0;
 }
 
 int
-sandbox_cfg_allow_rename(sandbox_cfg_t **cfg, char *file1, char *file2)
+sandbox_cfg_allow_rename(sandbox_cfg_t *cfg, char *file1, char *file2)
 {
-  sandbox_cfg_t *elem = NULL;
+  smp_param_t *param = NULL;
 
-  elem = new_element2(SCMP_SYS(rename), file1, file2);
-
-  elem->next = *cfg;
-  *cfg = elem;
+  param = new_element2(SCMP_SYS(rename), file1, file2);
+  smartlist_add(cfg->parameters, param);
 
   return 0;
 }
 
 int
-sandbox_cfg_allow_openat_filename(sandbox_cfg_t **cfg, char *file)
+sandbox_cfg_allow_openat_filename(sandbox_cfg_t *cfg, char *file)
 {
-  sandbox_cfg_t *elem = NULL;
+  smp_param_t *param = NULL;
 
-  elem = new_element(SCMP_SYS(openat), file);
-
-  elem->next = *cfg;
-  *cfg = elem;
+  param = new_element(SCMP_SYS(openat), file);
+  smartlist_add(cfg->parameters, param);
 
   return 0;
 }
@@ -1667,26 +1639,17 @@ install_sigsys_debugging(void)
 }
 
 /**
- * Function responsible of registering the sandbox_cfg_t list of parameter
- * syscall filters to the existing parameter list. This is used for incipient
- * multiple-sandbox support.
+ * Function responsible of registering the sandbox_cfg_t globally.
  */
 static int
 register_cfg(sandbox_cfg_t* cfg)
 {
-  sandbox_cfg_t *elem = NULL;
-
   if (filter_dynamic == NULL) {
     filter_dynamic = cfg;
     return 0;
   }
 
-  for (elem = filter_dynamic; elem->next != NULL; elem = elem->next)
-    ;
-
-  elem->next = cfg;
-
-  return 0;
+  return 1;
 }
 
 #endif /* defined(USE_LIBSECCOMP) */
@@ -1721,10 +1684,13 @@ sandbox_is_active(void)
 }
 #endif /* defined(USE_LIBSECCOMP) */
 
-sandbox_cfg_t*
+sandbox_cfg_t *
 sandbox_cfg_new(void)
 {
-  return NULL;
+  sandbox_cfg_t *cfg = NULL;
+  cfg = tor_malloc(sizeof(sandbox_cfg_t));
+  cfg->parameters = smartlist_new();
+  return cfg;
 }
 
 int
@@ -1752,42 +1718,42 @@ sandbox_init(sandbox_cfg_t *cfg)
 
 #ifndef USE_LIBSECCOMP
 int
-sandbox_cfg_allow_open_filename(sandbox_cfg_t **cfg, char *file)
+sandbox_cfg_allow_open_filename(sandbox_cfg_t *cfg, char *file)
 {
   (void)cfg; (void)file;
   return 0;
 }
 
 int
-sandbox_cfg_allow_openat_filename(sandbox_cfg_t **cfg, char *file)
+sandbox_cfg_allow_openat_filename(sandbox_cfg_t *cfg, char *file)
 {
   (void)cfg; (void)file;
   return 0;
 }
 
 int
-sandbox_cfg_allow_stat_filename(sandbox_cfg_t **cfg, char *file)
+sandbox_cfg_allow_stat_filename(sandbox_cfg_t *cfg, char *file)
 {
   (void)cfg; (void)file;
   return 0;
 }
 
 int
-sandbox_cfg_allow_chown_filename(sandbox_cfg_t **cfg, char *file)
+sandbox_cfg_allow_chown_filename(sandbox_cfg_t *cfg, char *file)
 {
   (void)cfg; (void)file;
   return 0;
 }
 
 int
-sandbox_cfg_allow_chmod_filename(sandbox_cfg_t **cfg, char *file)
+sandbox_cfg_allow_chmod_filename(sandbox_cfg_t *cfg, char *file)
 {
   (void)cfg; (void)file;
   return 0;
 }
 
 int
-sandbox_cfg_allow_rename(sandbox_cfg_t **cfg, char *file1, char *file2)
+sandbox_cfg_allow_rename(sandbox_cfg_t *cfg, char *file1, char *file2)
 {
   (void)cfg; (void)file1; (void)file2;
   return 0;

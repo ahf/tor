@@ -14,6 +14,7 @@
 
 #include "orconfig.h"
 #include "lib/cc/torint.h"
+#include "lib/container/smartlist.h"
 
 #ifndef SYS_SECCOMP
 
@@ -29,10 +30,11 @@
 #define USE_LIBSECCOMP
 #endif
 
-struct sandbox_cfg_elem;
-
-/** Typedef to structure used to manage a sandbox configuration. */
-typedef struct sandbox_cfg_elem sandbox_cfg_t;
+/** Configuration for Sandbox. */
+typedef struct sandbox_cfg_t {
+  /** Sandbox config parameters (list of smp_param_t). */
+  smartlist_t *parameters;
+} sandbox_cfg_t;
 
 /**
  * Linux definitions
@@ -60,33 +62,6 @@ typedef struct smp_param {
   int prot;
 } smp_param_t;
 
-/**
- * Structure used to manage a sandbox configuration.
- *
- * It is implemented as a linked list of parameters. Currently only controls
- * parameters for open, openat, execve, stat64.
- */
-struct sandbox_cfg_elem {
-  /** Configuration parameter. */
-  smp_param_t *param;
-
-  /** Next element of the configuration*/
-  struct sandbox_cfg_elem *next;
-};
-
-/** Function pointer defining the prototype of a filter function.*/
-typedef int (*sandbox_filter_func_t)(scmp_filter_ctx ctx,
-    sandbox_cfg_t *filter);
-
-/** Type that will be used in step 3 in order to manage multiple sandboxes.*/
-typedef struct {
-  /** function pointers associated with the filter */
-  sandbox_filter_func_t *filter_func;
-
-  /** filter function pointer parameters */
-  sandbox_cfg_t *filter_dynamic;
-} sandbox_t;
-
 #endif /* defined(USE_LIBSECCOMP) */
 
 #ifdef USE_LIBSECCOMP
@@ -99,36 +74,36 @@ const char* sandbox_intern_string(const char *param);
 #endif /* defined(USE_LIBSECCOMP) */
 
 /** Creates an empty sandbox configuration file.*/
-sandbox_cfg_t * sandbox_cfg_new(void);
+sandbox_cfg_t* sandbox_cfg_new(void);
 
 /**
  * Function used to add a open allowed filename to a supplied configuration.
  * The (char*) specifies the path to the allowed file; we take ownership
  * of the pointer.
  */
-int sandbox_cfg_allow_open_filename(sandbox_cfg_t **cfg, char *file);
+int sandbox_cfg_allow_open_filename(sandbox_cfg_t *cfg, char *file);
 
-int sandbox_cfg_allow_chmod_filename(sandbox_cfg_t **cfg, char *file);
-int sandbox_cfg_allow_chown_filename(sandbox_cfg_t **cfg, char *file);
+int sandbox_cfg_allow_chmod_filename(sandbox_cfg_t *cfg, char *file);
+int sandbox_cfg_allow_chown_filename(sandbox_cfg_t *cfg, char *file);
 
 /* DOCDOC */
-int sandbox_cfg_allow_rename(sandbox_cfg_t **cfg, char *file1, char *file2);
+int sandbox_cfg_allow_rename(sandbox_cfg_t *cfg, char *file1, char *file2);
 
 /**
  * Function used to add a openat allowed filename to a supplied configuration.
  * The (char*) specifies the path to the allowed file; we steal the pointer to
  * that file.
  */
-int sandbox_cfg_allow_openat_filename(sandbox_cfg_t **cfg, char *file);
+int sandbox_cfg_allow_openat_filename(sandbox_cfg_t *cfg, char *file);
 
 /**
  * Function used to add a stat/stat64 allowed filename to a configuration.
  * The (char*) specifies the path to the allowed file; that pointer is stolen.
  */
-int sandbox_cfg_allow_stat_filename(sandbox_cfg_t **cfg, char *file);
+int sandbox_cfg_allow_stat_filename(sandbox_cfg_t *cfg, char *file);
 
 /** Function used to initialise a sandbox configuration.*/
-int sandbox_init(sandbox_cfg_t* cfg);
+int sandbox_init(sandbox_cfg_t *cfg);
 
 /** Return true iff the sandbox is turned on. */
 int sandbox_is_active(void);
