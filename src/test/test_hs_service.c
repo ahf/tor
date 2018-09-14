@@ -2049,7 +2049,7 @@ test_export_client_circuit_id(void *arg)
 
   /* Check contents */
   cp1 = buf_get_contents(conn->outbuf, &sz);
-  tt_str_op(cp1, OP_EQ, "PROXY TCP6 fc00:dead:beef:4dad::29a ::1 666 42\r\n");
+  tt_str_op(cp1, OP_EQ, "PROXY TCP6 fc00:dead:beef:4dad::0:29a ::1 666 42\r\n");
 
   /* Change circ GID and see that the reported circuit ID also changes */
   or_circ->global_identifier = 22;
@@ -2058,6 +2058,27 @@ test_export_client_circuit_id(void *arg)
   export_hs_client_circuit_id_haproxy(edge_conn, conn);
   cp2 = buf_get_contents(conn->outbuf, &sz);
   tt_str_op(cp1, OP_NE, cp2);
+
+  /* Check that GID with UINT32_MAX works. */
+  or_circ->global_identifier = UINT32_MAX;
+
+  export_hs_client_circuit_id_haproxy(edge_conn, conn);
+  cp1 = buf_get_contents(conn->outbuf, &sz);
+  tt_str_op(cp1, OP_EQ, "PROXY TCP6 fc00:dead:beef:4dad::ffff:ffff ::1 65535 42\r\n");
+
+  /* Check that GID with UINT16_MAX works. */
+  or_circ->global_identifier = UINT16_MAX;
+
+  export_hs_client_circuit_id_haproxy(edge_conn, conn);
+  cp1 = buf_get_contents(conn->outbuf, &sz);
+  tt_str_op(cp1, OP_EQ, "PROXY TCP6 fc00:dead:beef:4dad::0:ffff ::1 65535 42\r\n");
+
+  /* Check that GID with UINT16_MAX + 7 works. */
+  or_circ->global_identifier = UINT16_MAX + 7;
+
+  export_hs_client_circuit_id_haproxy(edge_conn, conn);
+  cp1 = buf_get_contents(conn->outbuf, &sz);
+  tt_str_op(cp1, OP_EQ, "PROXY TCP6 fc00:dead:beef:4dad::1:6 ::1 6 42\r\n");
 
  done:
   UNMOCK(connection_write_to_buf_impl_);
