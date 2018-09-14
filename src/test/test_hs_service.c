@@ -2026,9 +2026,11 @@ test_export_client_circuit_id(void *arg)
   hs_service_t *service = helper_create_service();
   /* Check that export circuit ID detection works */
   service->config.export_circuit_id = false;
-  tt_int_op(0, OP_EQ, hs_service_exports_circuit_id(&service->keys.identity_pk));
+  tt_int_op(0, OP_EQ,
+            hs_service_exports_circuit_id(&service->keys.identity_pk));
   service->config.export_circuit_id = true;
-  tt_int_op(1, OP_EQ, hs_service_exports_circuit_id(&service->keys.identity_pk));
+  tt_int_op(1, OP_EQ,
+            hs_service_exports_circuit_id(&service->keys.identity_pk));
 
   /* Create client connection */
   conn = test_conn_get_connection(AP_CONN_STATE_CIRCUIT_WAIT, CONN_TYPE_AP, 0);
@@ -2049,7 +2051,8 @@ test_export_client_circuit_id(void *arg)
 
   /* Check contents */
   cp1 = buf_get_contents(conn->outbuf, &sz);
-  tt_str_op(cp1, OP_EQ, "PROXY TCP6 fc00:dead:beef:4dad::0:29a ::1 666 42\r\n");
+  tt_str_op(cp1, OP_EQ,
+            "PROXY TCP6 fc00:dead:beef:4dad::0:29a ::1 666 42\r\n");
 
   /* Change circ GID and see that the reported circuit ID also changes */
   or_circ->global_identifier = 22;
@@ -2064,14 +2067,16 @@ test_export_client_circuit_id(void *arg)
 
   export_hs_client_circuit_id_haproxy(edge_conn, conn);
   cp1 = buf_get_contents(conn->outbuf, &sz);
-  tt_str_op(cp1, OP_EQ, "PROXY TCP6 fc00:dead:beef:4dad::ffff:ffff ::1 65535 42\r\n");
+  tt_str_op(cp1, OP_EQ,
+            "PROXY TCP6 fc00:dead:beef:4dad::ffff:ffff ::1 65535 42\r\n");
 
   /* Check that GID with UINT16_MAX works. */
   or_circ->global_identifier = UINT16_MAX;
 
   export_hs_client_circuit_id_haproxy(edge_conn, conn);
   cp1 = buf_get_contents(conn->outbuf, &sz);
-  tt_str_op(cp1, OP_EQ, "PROXY TCP6 fc00:dead:beef:4dad::0:ffff ::1 65535 42\r\n");
+  tt_str_op(cp1, OP_EQ,
+            "PROXY TCP6 fc00:dead:beef:4dad::0:ffff ::1 65535 42\r\n");
 
   /* Check that GID with UINT16_MAX + 7 works. */
   or_circ->global_identifier = UINT16_MAX + 7;
