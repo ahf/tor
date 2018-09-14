@@ -600,8 +600,8 @@ connected_cell_format_payload(uint8_t *payload_out,
 /* This is an onion service client connection: Export the client circuit ID
  * according to the HAProxy proxy protocol. */
 STATIC void
-export_hs_client_circuit_id(const edge_connection_t *edge_conn,
-                            connection_t *conn)
+export_hs_client_circuit_id_haproxy(const edge_connection_t *edge_conn,
+                                    connection_t *conn)
 {
   char *buf;
   const char dst_ipv6[] = "::1";
@@ -656,7 +656,7 @@ connection_edge_finished_connecting(edge_connection_t *edge_conn)
    * protocol header */
   if (edge_conn->hs_ident &&
       hs_service_exports_circuit_id(&edge_conn->hs_ident->identity_pk)) {
-    export_hs_client_circuit_id(edge_conn, conn);
+    export_hs_client_circuit_id_haproxy(edge_conn, conn);
   }
 
   connection_watch_events(conn, READ_EVENT); /* stop writing, keep reading */
