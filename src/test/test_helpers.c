@@ -128,6 +128,9 @@ connection_write_to_buf_mock(const char *string, size_t len,
 char *
 buf_get_contents(buf_t *buf, size_t *sz_out)
 {
+  tor_assert(buf);
+  tor_assert(sz_out);
+
   char *out;
   *sz_out = buf_datalen(buf);
   if (*sz_out >= ULONG_MAX)
