@@ -2045,7 +2045,7 @@ test_export_client_circuit_id(void *arg)
   or_circ->global_identifier = 666;
 
   /* Export circuit ID */
-  export_hs_client_circuit_id(edge_conn, conn);
+  export_hs_client_circuit_id_haproxy(edge_conn, conn);
 
   /* Check contents */
   cp1 = buf_get_contents(conn->outbuf, &sz);
@@ -2055,7 +2055,7 @@ test_export_client_circuit_id(void *arg)
   or_circ->global_identifier = 22;
 
   /* check changes */
-  export_hs_client_circuit_id(edge_conn, conn);
+  export_hs_client_circuit_id_haproxy(edge_conn, conn);
   cp2 = buf_get_contents(conn->outbuf, &sz);
   tt_str_op(cp1, OP_NE, cp2);
 
