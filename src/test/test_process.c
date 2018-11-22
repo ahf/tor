@@ -149,6 +149,9 @@ test_default_values(void *arg)
   /* We have no process name by default. */
   tt_ptr_op(NULL, OP_EQ, process_get_name(process));
 
+  /* Default PID is 0. */
+  tt_int_op(0, OP_EQ, process_get_pid(process));
+
   /* Let's give it a name. */
   process_set_name(process, "/bin/ls");
   tt_str_op("/bin/ls", OP_EQ, process_get_name(process));
