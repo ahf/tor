@@ -555,6 +555,10 @@ process_unix_waitpid_callback(int status, void *data)
   /* Remove our waitpid callback. */
   clear_waitpid_callback(unix_process->waitpid);
   unix_process->waitpid = NULL;
+
+  /* Make sure you don't modify the process after we have called
+   * process_notify_event_exit() on it, to allow users to process_free() it in
+   * the exit callback. */
 }
 
 /** This function sets the file descriptor in the <b>handle</b> as non-blocking
