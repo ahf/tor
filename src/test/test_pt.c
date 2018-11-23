@@ -151,6 +151,8 @@ test_pt_get_transport_options(void *arg)
   config_line_t *cl = NULL;
   (void)arg;
 
+  process_init();
+
   execve_args = tor_malloc(sizeof(char*)*2);
   execve_args[0] = tor_strdup("cheeseshop");
   execve_args[1] = NULL;
@@ -190,6 +192,7 @@ test_pt_get_transport_options(void *arg)
   config_free_lines(cl);
   managed_proxy_destroy(mp, 0);
   smartlist_free(transport_list);
+  process_free_all();
 }
 
 static void
@@ -253,6 +256,8 @@ test_pt_get_extrainfo_string(void *arg)
   char *s = NULL;
   (void) arg;
 
+  process_init();
+
   argv1 = tor_malloc_zero(sizeof(char*)*3);
   argv1[0] = tor_strdup("ewige");
   argv1[1] = tor_strdup("Blumenkraft");
@@ -286,6 +291,7 @@ test_pt_get_extrainfo_string(void *arg)
   smartlist_free(t1);
   smartlist_free(t2);
   tor_free(s);
+  process_free_all();
 }
 
 #ifdef _WIN32
@@ -355,6 +361,8 @@ test_pt_configure_proxy(void *arg)
   managed_proxy_t *mp = NULL;
   (void) arg;
 
+  process_init();
+
   dummy_state = tor_malloc_zero(sizeof(or_state_t));
 
   MOCK(tor_get_lines_from_handle,
@@ -372,7 +380,7 @@ test_pt_configure_proxy(void *arg)
   mp->conf_state = PT_PROTO_ACCEPTING_METHODS;
   mp->transports = smartlist_new();
   mp->transports_to_launch = smartlist_new();
-  mp->process_handle = tor_malloc_zero(sizeof(process_handle_t));
+  mp->process = process_new();
   mp->argv = tor_malloc_zero(sizeof(char*)*2);
   mp->argv[0] = tor_strdup("<testcase>");
   mp->is_server = 1;
@@ -385,7 +393,7 @@ test_pt_configure_proxy(void *arg)
     /* retval should be zero because proxy hasn't finished configuring yet */
     tt_int_op(retval, OP_EQ, 0);
     /* check the number of registered transports */
-    tt_assert(smartlist_len(mp->transports) == i+1);
+    tt_int_op(smartlist_len(mp->transports), OP_EQ, i+1);
     /* check that the mp is still waiting for transports */
     tt_assert(mp->conf_state == PT_PROTO_ACCEPTING_METHODS);
   }
@@ -449,10 +457,11 @@ test_pt_configure_proxy(void *arg)
     smartlist_free(mp->transports);
   }
   smartlist_free(mp->transports_to_launch);
-  tor_free(mp->process_handle);
+  process_free(mp->process);
   tor_free(mp->argv[0]);
   tor_free(mp->argv);
   tor_free(mp);
+  process_free_all();
 }
 
 /* Test the get_pt_proxy_uri() function. */
