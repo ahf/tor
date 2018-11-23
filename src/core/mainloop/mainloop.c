@@ -1772,10 +1772,6 @@ run_scheduled_events(time_t now)
   for (i=0;i<smartlist_len(connection_array);i++) {
     run_connection_housekeeping(i, now);
   }
-
-  /* 11b. check pending unconfigured managed proxies */
-  if (!net_is_disabled() && pt_proxies_configuration_pending())
-    pt_configure_remaining_proxies();
 }
 
 /* Periodic callback: rotate the onion keys after the period defined by the
