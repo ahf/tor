@@ -266,7 +266,7 @@ test_line_protocol_multi(void *arg)
   tt_int_op(0, OP_EQ, smartlist_len(process_data->stdout_data));
   tt_int_op(0, OP_EQ, smartlist_len(process_data->stderr_data));
 
-  stdout_read_buffer = "Hello stdout\r\nOnion Onion Onion\nA B C D\r\n";
+  stdout_read_buffer = "Hello stdout\r\nOnion Onion Onion\nA B C D\r\n\r\n";
   process_notify_event_stdout(process);
   tt_ptr_op(NULL, OP_EQ, stdout_read_buffer);
 
@@ -275,7 +275,7 @@ test_line_protocol_multi(void *arg)
   tt_ptr_op(NULL, OP_EQ, stderr_read_buffer);
 
   /* Data should be ready. */
-  tt_int_op(3, OP_EQ, smartlist_len(process_data->stdout_data));
+  tt_int_op(4, OP_EQ, smartlist_len(process_data->stdout_data));
   tt_int_op(3, OP_EQ, smartlist_len(process_data->stderr_data));
 
   /* Check if the data is correct. */
@@ -285,6 +285,8 @@ test_line_protocol_multi(void *arg)
             "Onion Onion Onion");
   tt_str_op(smartlist_get(process_data->stdout_data, 2), OP_EQ,
             "A B C D");
+  tt_str_op(smartlist_get(process_data->stdout_data, 3), OP_EQ,
+            "");
 
   tt_str_op(smartlist_get(process_data->stderr_data, 0), OP_EQ,
             "Hello stderr");
