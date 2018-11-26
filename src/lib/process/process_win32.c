@@ -217,7 +217,8 @@ process_win32_exec(process_t *process)
                        NULL,
                        TRUE,
                        CREATE_NO_WINDOW,
-                       env->windows_environment_block,
+                       env->windows_environment_block[0] == '\0' ?
+                         NULL : env->windows_environment_block,
                        NULL,
                        &startup_info,
                        &win32_process->process_information);

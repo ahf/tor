@@ -27,6 +27,9 @@
 /** Timer that ticks once a second and stop the event loop after 5 ticks. */
 static periodic_timer_t *main_loop_timeout_timer;
 
+/** How many times have our timer ticked? */
+static int timer_tick_count;
+
 struct process_data_t {
   smartlist_t *stdout_data;
   smartlist_t *stderr_data;
@@ -98,6 +101,28 @@ process_exit_callback(process_t *process, process_exit_code_t exit_code)
   tor_shutdown_event_loop_and_exit(0);
 }
 
+#ifdef _WIN32
+static const char *
+get_win32_test_binary_path(void)
+{
+  static char buffer[MAX_PATH];
+
+  /* Get the absolute path of our binary: \path\to\test-slow.exe. */
+  GetModuleFileNameA(GetModuleHandle(0), buffer, sizeof(buffer));
+
+  /* Find our process name. */
+  char *offset = strstr(buffer, "test-slow.exe");
+  tt_ptr_op(offset, OP_NE, NULL);
+
+  /* Change test-slow.exe to test-process.exe. */
+  memcpy(offset, TEST_PROCESS, strlen(TEST_PROCESS));
+
+  return buffer;
+ done:
+  return NULL;
+}
+#endif
+
 static void
 main_loop_timeout_cb(periodic_timer_t *timer, void *data)
 {
@@ -105,11 +130,10 @@ main_loop_timeout_cb(periodic_timer_t *timer, void *data)
   tt_ptr_op(timer, OP_EQ, main_loop_timeout_timer);
   tt_ptr_op(data, OP_EQ, NULL);
 
-  /* Have we been called 5 times we exit. */
-  static int max_calls = 0;
+  /* Have we been called 10 times we exit. */
+  timer_tick_count++;
 
-  tt_int_op(max_calls, OP_LT, 5);
-  ++max_calls;
+  tt_int_op(timer_tick_count, OP_LT, 10);
 
 #ifndef _WIN32
   /* Call waitpid callbacks. */
@@ -119,7 +143,6 @@ main_loop_timeout_cb(periodic_timer_t *timer, void *data)
   return;
  done:
   /* Exit with an error. */
-  max_calls = 0;
   tor_shutdown_event_loop_and_exit(-1);
 }
 
@@ -128,9 +151,10 @@ run_main_loop(void)
 {
   int ret;
 
-  /* Wake up after 5 seconds. */
+  /* Wake up after 1 seconds. */
   static const struct timeval interval = {1, 0};
 
+  timer_tick_count = 0;
   main_loop_timeout_timer = periodic_timer_new(tor_libevent_get_base(),
                                                &interval,
                                                main_loop_timeout_cb,
@@ -150,6 +174,13 @@ static void
 test_callbacks(void *arg)
 {
   (void)arg;
+  const char *filename = NULL;
+
+#ifdef _WIN32
+  filename = get_win32_test_binary_path();
+#else
+  filename = TEST_PROCESS;
+#endif
 
   /* Initialize Process subsystem. */
   process_init();
@@ -159,7 +190,7 @@ test_callbacks(void *arg)
 
   /* Setup our process. */
   process_t *process = process_new();
-  process_set_name(process, TEST_PROCESS);
+  process_set_name(process, filename);
   process_set_data(process, process_data);
   process_set_stdout_read_callback(process, process_stdout_callback);
   process_set_stderr_read_callback(process, process_stderr_callback);
@@ -198,8 +229,12 @@ test_callbacks(void *arg)
   tt_int_op(process_data->exit_code, OP_EQ, 0);
 
   /* Check stdout output. */
+  char argv0_expected[256];
+  tor_snprintf(argv0_expected, sizeof(argv0_expected),
+               "argv[0] = '%s'", filename);
+
   tt_str_op(smartlist_get(process_data->stdout_data, 0), OP_EQ,
-            "argv[0] = '" TEST_PROCESS "'");
+            argv0_expected);
   tt_str_op(smartlist_get(process_data->stdout_data, 1), OP_EQ,
             "argv[1] = 'This is the first one'");
   tt_str_op(smartlist_get(process_data->stdout_data, 2), OP_EQ,
@@ -241,6 +276,13 @@ static void
 test_callbacks_terminate(void *arg)
 {
   (void)arg;
+  const char *filename = NULL;
+
+#ifdef _WIN32
+  filename = get_win32_test_binary_path();
+#else
+  filename = TEST_PROCESS;
+#endif
 
   /* Initialize Process subsystem. */
   process_init();
@@ -250,7 +292,7 @@ test_callbacks_terminate(void *arg)
 
   /* Setup our process. */
   process_t *process = process_new();
-  process_set_name(process, TEST_PROCESS);
+  process_set_name(process, filename);
   process_set_data(process, process_data);
   process_set_exit_callback(process, process_exit_callback);
 
