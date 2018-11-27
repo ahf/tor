@@ -491,6 +491,7 @@ proxy_prepare_for_restart(managed_proxy_t *mp)
   tor_assert(mp->conf_state == PT_PROTO_COMPLETED);
 
   /* destroy the process handle and terminate the process. */
+  process_set_data(mp->process, NULL);
   process_terminate(mp->process);
 
   /* the process will call our exit callback and free itself. */
@@ -711,10 +712,10 @@ managed_proxy_destroy(managed_proxy_t *mp,
   tor_free(mp->proxy_uri);
 
   /* do we want to terminate our process if it's still running? */
-  if (also_terminate_process && mp->process)
+  if (also_terminate_process && mp->process) {
+    process_set_data(mp->process, NULL);
     process_terminate(mp->process);
-
-  process_free(mp->process);
+  }
 
   tor_free(mp);
 }
