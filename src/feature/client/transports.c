@@ -1735,6 +1735,9 @@ managed_proxy_stdout_callback(process_t *process, char *line, size_t size)
 
   managed_proxy_t *mp = process_get_data(process);
 
+  if (BUG(mp == NULL))
+    return;
+
   handle_proxy_line(line, mp);
 
   if (proxy_configuration_finished(mp)) {
@@ -1755,6 +1758,10 @@ managed_proxy_stderr_callback(process_t *process, char *line, size_t size)
   (void)size;
 
   managed_proxy_t *mp = process_get_data(process);
+
+  if (BUG(mp == NULL))
+    return;
+
   log_warn(LD_PT, "Managed proxy at '%s' reported: %s", mp->argv[0], line);
 }
 
