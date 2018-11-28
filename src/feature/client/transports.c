@@ -491,10 +491,8 @@ proxy_prepare_for_restart(managed_proxy_t *mp)
   tor_assert(mp->conf_state == PT_PROTO_COMPLETED);
 
   /* destroy the process handle and terminate the process. */
-  process_terminate(mp->process);
-
-  /* the process will call our exit callback and free itself. */
   process_set_data(mp->process, NULL);
+  process_terminate(mp->process);
 
   /* destroy all its registered transports, since we will no longer
      use them. */
@@ -539,7 +537,8 @@ launch_managed_proxy(managed_proxy_t *mp)
   SMARTLIST_FOREACH(env, char *, x, tor_free(x));
   smartlist_free(env);
 
-  for (int i = 0; mp->argv[i] != NULL; ++i)
+  /* Skip the argv[0] as we get that from process_new(argv[0]). */
+  for (int i = 1; mp->argv[i] != NULL; ++i)
     process_append_argument(mp->process, mp->argv[i]);
 
   if (process_exec(mp->process) != PROCESS_STATUS_RUNNING) {
@@ -1754,6 +1753,7 @@ managed_proxy_stderr_callback(process_t *process, char *line, size_t size)
   (void)size;
 
   managed_proxy_t *mp = process_get_data(process);
+
   log_warn(LD_PT, "Managed proxy at '%s' reported: %s", mp->argv[0], line);
 }
 
@@ -1772,7 +1772,7 @@ managed_proxy_exit_callback(process_t *process, process_exit_code_t exit_code)
   /* We detach ourself from the MP (if we are attached) and free ourself. */
   managed_proxy_t *mp = process_get_data(process);
 
-  if (mp != NULL) {
+  if (BUG(mp != NULL)) {
     mp->process = NULL;
     process_set_data(process, NULL);
   }
