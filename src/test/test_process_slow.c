@@ -25,6 +25,8 @@
 #define TEST_PROCESS BUILDDIR "/src/test/test-process"
 #endif /* defined(_WIN32) */
 
+#include <stdio.h>
+
 /** Timer that ticks once a second and stop the event loop after 5 ticks. */
 static periodic_timer_t *main_loop_timeout_timer;
 
