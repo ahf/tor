@@ -119,7 +119,7 @@ process_unix_free_(process_unix_t *unix_process)
   if (! unix_process->stderr_handle.reached_eof)
     process_unix_stop_reading(&unix_process->stderr_handle);
 
-  if (unix_process->stderr_handle.is_writing)
+  if (unix_process->stdin_handle.is_writing)
     process_unix_stop_writing(&unix_process->stdin_handle);
 
   tor_event_free(unix_process->stdout_handle.event);
