@@ -119,7 +119,8 @@ process_unix_free_(process_unix_t *unix_process)
   if (! unix_process->stderr_handle.reached_eof)
     process_unix_stop_reading(&unix_process->stderr_handle);
 
-  process_unix_stop_writing(&unix_process->stdin_handle);
+  if (unix_process->stderr_handle.is_writing)
+    process_unix_stop_writing(&unix_process->stdin_handle);
 
   tor_event_free(unix_process->stdout_handle.event);
   tor_event_free(unix_process->stderr_handle.event);
@@ -368,6 +369,8 @@ process_unix_terminate(process_t *process)
   if (BUG(unix_process->waitpid == NULL))
     return false;
 
+  bool success = true;
+
   /* Send a SIGTERM to our child process. */
   int ret;
 
@@ -376,10 +379,28 @@ process_unix_terminate(process_t *process)
   if (ret == -1) {
     log_warn(LD_PROCESS, "Unable to terminate process: %s",
              strerror(errno));
-    return false;
+    success = false;
   }
 
-  return ret == 0;
+  ret = close(unix_process->stdin_handle.fd);
+  if (ret == -1) {
+    log_warn(LD_PROCESS, "Unable to close stdin");
+    success = false;
+  }
+
+  ret = close(unix_process->stdout_handle.fd);
+  if (ret == -1) {
+    log_warn(LD_PROCESS, "Unable to close stdout");
+    success = false;
+  }
+
+  close(unix_process->stderr_handle.fd);
+  if (ret == -1) {
+    log_warn(LD_PROCESS, "Unable to close stderr");
+    success = false;
+  }
+
+  return success;
 }
 
 /** Returns the unique process identifier for the given <b>process</b>. */
