@@ -205,6 +205,8 @@ process_new(const char *command)
 
   smartlist_add(processes, process);
 
+  log_warn(LD_PROCESS, "New process %p", process);
+
   return process;
 }
 
@@ -212,6 +214,8 @@ process_new(const char *command)
 void
 process_free_(process_t *process)
 {
+  log_warn(LD_PROCESS, "Freeing %p", process);
+
   if (! process)
     return;
 

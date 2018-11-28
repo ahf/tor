@@ -278,7 +278,7 @@ transport_resolve_conflicts(const transport_t *t)
       char *new_transport_addrport =
         tor_strdup(fmt_addrport(&t->addr, t->port));
       if (t_tmp->marked_for_removal) { /* marked for removal */
-        log_notice(LD_GENERAL, "You tried to add transport '%s' at '%s' "
+        log_notice(LD_PT, "You tried to add transport '%s' at '%s' "
                    "but there was already a transport marked for deletion at "
                    "'%s'. We deleted the old transport and registered the "
                    "new one.", t->name, new_transport_addrport,
@@ -287,7 +287,7 @@ transport_resolve_conflicts(const transport_t *t)
         transport_free(t_tmp);
         tor_free(new_transport_addrport);
       } else { /* *not* marked for removal */
-        log_notice(LD_GENERAL, "You tried to add transport '%s' at '%s' "
+        log_notice(LD_PT, "You tried to add transport '%s' at '%s' "
                    "but the same transport already exists at '%s'. "
                    "Skipping.", t->name, new_transport_addrport,
                    fmt_addrport(&t_tmp->addr, t_tmp->port));
@@ -339,17 +339,17 @@ transport_add_from_config, (const tor_addr_t *addr, uint16_t port,
   switch (r) {
   case -1:
   default:
-    log_notice(LD_GENERAL, "Could not add transport %s at %s. Skipping.",
+    log_notice(LD_PT, "Could not add transport %s at %s. Skipping.",
                t->name, fmt_addrport(&t->addr, t->port));
     transport_free(t);
     return -1;
   case 1:
-    log_info(LD_GENERAL, "Successfully registered transport %s at %s.",
+    log_info(LD_PT, "Successfully registered transport %s at %s.",
              t->name, fmt_addrport(&t->addr, t->port));
      transport_free(t); /* falling */
      return 0;
   case 0:
-    log_info(LD_GENERAL, "Successfully registered transport %s at %s.",
+    log_info(LD_PT, "Successfully registered transport %s at %s.",
              t->name, fmt_addrport(&t->addr, t->port));
     return 0;
   }
@@ -494,9 +494,6 @@ proxy_prepare_for_restart(managed_proxy_t *mp)
   process_set_data(mp->process, NULL);
   process_terminate(mp->process);
 
-  /* the process will call our exit callback and free itself. */
-  process_set_data(mp->process, NULL);
-
   /* destroy all its registered transports, since we will no longer
      use them. */
   SMARTLIST_FOREACH_BEGIN(mp->transports, const transport_t *, t) {
@@ -529,11 +526,6 @@ launch_managed_proxy(managed_proxy_t *mp)
   smartlist_t *env = create_managed_proxy_environment(mp);
 
   /* Configure our process. */
-  process_set_data(mp->process, mp);
-  process_set_stdout_read_callback(mp->process, managed_proxy_stdout_callback);
-  process_set_stderr_read_callback(mp->process, managed_proxy_stderr_callback);
-  process_set_exit_callback(mp->process, managed_proxy_exit_callback);
-  process_set_protocol(mp->process, PROCESS_PROTOCOL_LINE);
   process_reset_environment(mp->process, env);
 
   /* Cleanup our env. */
@@ -544,12 +536,12 @@ launch_managed_proxy(managed_proxy_t *mp)
     process_append_argument(mp->process, mp->argv[i]);
 
   if (process_exec(mp->process) != PROCESS_STATUS_RUNNING) {
-    log_warn(LD_CONFIG, "Managed proxy at '%s' failed at launch.",
+    log_warn(LD_PT, "Managed proxy at '%s' failed at launch.",
              mp->argv[0]);
     return -1;
   }
 
-  log_info(LD_CONFIG,
+  log_info(LD_PT,
            "Managed proxy at '%s' has spawned with PID '%" PRIu64 "'.",
            mp->argv[0], process_get_pid(mp->process));
   mp->conf_state = PT_PROTO_LAUNCHED;
@@ -565,7 +557,7 @@ pt_configure_remaining_proxies(void)
   int at_least_a_proxy_config_finished = 0;
   smartlist_t *tmp = smartlist_new();
 
-  log_debug(LD_CONFIG, "Configuring remaining managed proxies (%d)!",
+  log_debug(LD_PT, "Configuring remaining managed proxies (%d)!",
             unconfigured_proxies_n);
 
   /* Iterate over tmp, not managed_proxy_list, since configure_proxy can
@@ -585,11 +577,11 @@ pt_configure_remaining_proxies(void)
       mp->was_around_before_config_read = 0;
 
       if (proxy_needs_restart(mp)) {
-        log_info(LD_GENERAL, "Preparing managed proxy '%s' for restart.",
+        log_info(LD_PT, "Preparing managed proxy '%s' for restart.",
                  mp->argv[0]);
         proxy_prepare_for_restart(mp);
       } else { /* it doesn't need to be restarted. */
-        log_info(LD_GENERAL, "Nothing changed for managed proxy '%s' after "
+        log_info(LD_PT, "Nothing changed for managed proxy '%s' after "
                  "HUP: not restarting.", mp->argv[0]);
       }
 
@@ -641,7 +633,7 @@ register_server_proxy(const managed_proxy_t *mp)
 
   SMARTLIST_FOREACH_BEGIN(mp->transports, transport_t *, t) {
     save_transport_to_state(t->name, &t->addr, t->port);
-    log_notice(LD_GENERAL, "Registered server transport '%s' at '%s'",
+    log_notice(LD_PT, "Registered server transport '%s' at '%s'",
                t->name, fmt_addrport(&t->addr, t->port));
     control_event_transport_launched("server", t->name, &t->addr, t->port);
   } SMARTLIST_FOREACH_END(t);
@@ -661,15 +653,15 @@ register_client_proxy(const managed_proxy_t *mp)
     r = transport_add(transport_tmp);
     switch (r) {
     case -1:
-      log_notice(LD_GENERAL, "Could not add transport %s. Skipping.", t->name);
+      log_notice(LD_PT, "Could not add transport %s. Skipping.", t->name);
       transport_free(transport_tmp);
       break;
     case 0:
-      log_info(LD_GENERAL, "Successfully registered transport %s", t->name);
+      log_info(LD_PT, "Successfully registered transport %s", t->name);
       control_event_transport_launched("client", t->name, &t->addr, t->port);
       break;
     case 1:
-      log_info(LD_GENERAL, "Successfully registered transport %s", t->name);
+      log_info(LD_PT, "Successfully registered transport %s", t->name);
       control_event_transport_launched("client", t->name, &t->addr, t->port);
       transport_free(transport_tmp);
       break;
@@ -772,7 +764,7 @@ handle_finished_proxy(managed_proxy_t *mp)
     break;
   case PT_PROTO_CONFIGURED: /* if configured correctly: */
     if (mp->proxy_uri && !mp->proxy_supported) {
-      log_warn(LD_CONFIG, "Managed proxy '%s' did not configure the "
+      log_warn(LD_PT, "Managed proxy '%s' did not configure the "
                "specified outgoing proxy and will be terminated.",
                mp->argv[0]);
       managed_proxy_destroy(mp, 1); /* annihilate it. */
@@ -786,7 +778,7 @@ handle_finished_proxy(managed_proxy_t *mp)
   case PT_PROTO_ACCEPTING_METHODS:
   case PT_PROTO_COMPLETED:
   default:
-    log_warn(LD_CONFIG, "Unexpected state '%d' of managed proxy '%s'.",
+    log_warn(LD_PT, "Unexpected state '%d' of managed proxy '%s'.",
              (int)mp->conf_state, mp->argv[0]);
     tor_assert(0);
   }
@@ -811,11 +803,11 @@ handle_methods_done(const managed_proxy_t *mp)
   tor_assert(mp->transports);
 
   if (smartlist_len(mp->transports) == 0)
-    log_notice(LD_GENERAL, "Managed proxy '%s' was spawned successfully, "
+    log_notice(LD_PT, "Managed proxy '%s' was spawned successfully, "
                "but it didn't launch any pluggable transport listeners!",
                mp->argv[0]);
 
-  log_info(LD_CONFIG, "%s managed proxy '%s' configuration completed!",
+  log_info(LD_PT, "%s managed proxy '%s' configuration completed!",
            mp->is_server ? "Server" : "Client",
            mp->argv[0]);
 }
@@ -825,7 +817,7 @@ handle_methods_done(const managed_proxy_t *mp)
 STATIC void
 handle_proxy_line(const char *line, managed_proxy_t *mp)
 {
-  log_info(LD_GENERAL, "Got a line from managed proxy '%s': (%s)",
+  log_info(LD_PT, "Got a line from managed proxy '%s': (%s)",
            mp->argv[0], line);
 
   if (!strcmpstart(line, PROTO_ENV_ERROR)) {
@@ -838,7 +830,7 @@ handle_proxy_line(const char *line, managed_proxy_t *mp)
     if (mp->conf_state != PT_PROTO_LAUNCHED)
       goto err;
 
-    log_warn(LD_CONFIG, "Managed proxy could not pick a "
+    log_warn(LD_PT, "Managed proxy could not pick a "
              "configuration protocol version.");
     goto err;
   } else if (!strcmpstart(line, PROTO_NEG_SUCCESS)) {
@@ -916,12 +908,12 @@ handle_proxy_line(const char *line, managed_proxy_t *mp)
     return;
   }
 
-  log_notice(LD_GENERAL, "Unknown line received by managed proxy (%s).", line);
+  log_notice(LD_PT, "Unknown line received by managed proxy (%s).", line);
   return;
 
  err:
   mp->conf_state = PT_PROTO_BROKEN;
-  log_warn(LD_CONFIG, "Managed proxy at '%s' failed the configuration protocol"
+  log_warn(LD_PT, "Managed proxy at '%s' failed the configuration protocol"
            " and will be destroyed.", mp->argv[0]);
 }
 
@@ -932,10 +924,10 @@ parse_env_error(const char *line)
   /* (Length of the protocol string) plus (a space) and (the first char of
      the error message) */
   if (strlen(line) < (strlen(PROTO_ENV_ERROR) + 2))
-    log_notice(LD_CONFIG, "Managed proxy sent us an %s without an error "
+    log_notice(LD_PT, "Managed proxy sent us an %s without an error "
                "message.", PROTO_ENV_ERROR);
 
-  log_warn(LD_CONFIG, "Managed proxy couldn't understand the "
+  log_warn(LD_PT, "Managed proxy couldn't understand the "
            "pluggable transport environment variables. (%s)",
            line+strlen(PROTO_ENV_ERROR)+1);
 }
@@ -946,13 +938,13 @@ STATIC int
 parse_version(const char *line, managed_proxy_t *mp)
 {
   if (strlen(line) < (strlen(PROTO_NEG_SUCCESS) + 2)) {
-    log_warn(LD_CONFIG, "Managed proxy sent us malformed %s line.",
+    log_warn(LD_PT, "Managed proxy sent us malformed %s line.",
              PROTO_NEG_SUCCESS);
     return -1;
   }
 
   if (strcmp("1", line+strlen(PROTO_NEG_SUCCESS)+1)) { /* hardcoded temp */
-    log_warn(LD_CONFIG, "Managed proxy tried to negotiate on version '%s'. "
+    log_warn(LD_PT, "Managed proxy tried to negotiate on version '%s'. "
              "We only support version '1'", line+strlen(PROTO_NEG_SUCCESS)+1);
     return -1;
   }
@@ -973,10 +965,10 @@ parse_method_error(const char *line, int is_server)
   /* (Length of the protocol string) plus (a space) and (the first char of
      the error message) */
   if (strlen(line) < (strlen(error) + 2))
-    log_warn(LD_CONFIG, "Managed proxy sent us an %s without an error "
+    log_warn(LD_PT, "Managed proxy sent us an %s without an error "
              "message.", error);
 
-  log_warn(LD_CONFIG, "%s managed proxy encountered a method error. (%s)",
+  log_warn(LD_PT, "%s managed proxy encountered a method error. (%s)",
            is_server ? "Server" : "Client",
            line+strlen(error)+1);
 }
@@ -1010,7 +1002,7 @@ parse_method_line_helper(const char *line,
   smartlist_split_string(items, line, NULL,
                          SPLIT_SKIP_SPACE|SPLIT_IGNORE_BLANK, -1);
   if (smartlist_len(items) < min_args_count) {
-    log_warn(LD_CONFIG, "Managed proxy sent us a %s line "
+    log_warn(LD_PT, "Managed proxy sent us a %s line "
              "with too few arguments.", method_str);
     goto err;
   }
@@ -1021,7 +1013,7 @@ parse_method_line_helper(const char *line,
   transport_name = smartlist_get(items,item_index);
   ++item_index;
   if (!string_is_C_identifier(transport_name)) {
-    log_warn(LD_CONFIG, "Transport name is not a C identifier (%s).",
+    log_warn(LD_PT, "Transport name is not a C identifier (%s).",
              transport_name);
     goto err;
   }
@@ -1036,7 +1028,7 @@ parse_method_line_helper(const char *line,
     } else if (!strcmp(socks_ver_str,"socks5")) {
       socks_ver = PROXY_SOCKS5;
     } else {
-      log_warn(LD_CONFIG, "Client managed proxy sent us a proxy protocol "
+      log_warn(LD_PT, "Client managed proxy sent us a proxy protocol "
                "we don't recognize. (%s)", socks_ver_str);
       goto err;
     }
@@ -1045,18 +1037,18 @@ parse_method_line_helper(const char *line,
   addrport = smartlist_get(items, item_index);
   ++item_index;
   if (tor_addr_port_split(LOG_WARN, addrport, &address, &port)<0) {
-    log_warn(LD_CONFIG, "Error parsing transport address '%s'", addrport);
+    log_warn(LD_PT, "Error parsing transport address '%s'", addrport);
     goto err;
   }
 
   if (!port) {
-    log_warn(LD_CONFIG,
+    log_warn(LD_PT,
              "Transport address '%s' has no port.", addrport);
     goto err;
   }
 
   if (tor_addr_parse(&tor_addr, address) < 0) {
-    log_warn(LD_CONFIG, "Error parsing transport address '%s'", address);
+    log_warn(LD_PT, "Error parsing transport address '%s'", address);
     goto err;
   }
 
@@ -1065,10 +1057,10 @@ parse_method_line_helper(const char *line,
     /* Seems like there are also some [options] in the SMETHOD line.
        Let's see if we can parse them. */
     char *options_string = smartlist_get(items, item_index);
-    log_debug(LD_CONFIG, "Got options_string: %s", options_string);
+    log_debug(LD_PT, "Got options_string: %s", options_string);
     if (!strcmpstart(options_string, "ARGS:")) {
       args_string = options_string+strlen("ARGS:");
-      log_debug(LD_CONFIG, "Got ARGS: %s", args_string);
+      log_debug(LD_PT, "Got ARGS: %s", args_string);
     }
   }
 
@@ -1079,10 +1071,10 @@ parse_method_line_helper(const char *line,
 
   /** Logs info about line parsing success for client or server */
   if (is_smethod) {
-    log_info(LD_CONFIG, "Server transport %s at %s:%d.",
+    log_info(LD_PT, "Server transport %s at %s:%d.",
              transport_name, address, (int)port);
   } else {
-    log_info(LD_CONFIG, "Transport %s at %s:%d with SOCKS %d. "
+    log_info(LD_PT, "Transport %s at %s:%d with SOCKS %d. "
              "Attached to managed proxy.",
              transport_name, address, (int)port, socks_ver);
   }
@@ -1127,10 +1119,10 @@ parse_proxy_error(const char *line)
   /* (Length of the protocol string) plus (a space) and (the first char of
      the error message) */
   if (strlen(line) < (strlen(PROTO_PROXY_ERROR) + 2))
-    log_notice(LD_CONFIG, "Managed proxy sent us an %s without an error "
+    log_notice(LD_PT, "Managed proxy sent us an %s without an error "
                "message.", PROTO_PROXY_ERROR);
 
-  log_warn(LD_CONFIG, "Managed proxy failed to configure the "
+  log_warn(LD_PT, "Managed proxy failed to configure the "
            "pluggable transport's outgoing proxy. (%s)",
            line+strlen(PROTO_PROXY_ERROR)+1);
 }
@@ -1376,7 +1368,14 @@ managed_proxy_create(const smartlist_t *with_transport_list,
   mp->argv = proxy_argv;
   mp->transports = smartlist_new();
   mp->proxy_uri = get_pt_proxy_uri();
+
+  /* Setup our process. */
   mp->process = process_new(proxy_argv[0]);
+  process_set_data(mp->process, mp);
+  process_set_stdout_read_callback(mp->process, managed_proxy_stdout_callback);
+  process_set_stderr_read_callback(mp->process, managed_proxy_stderr_callback);
+  process_set_exit_callback(mp->process, managed_proxy_exit_callback);
+  process_set_protocol(mp->process, PROCESS_PROTOCOL_LINE);
 
   mp->transports_to_launch = smartlist_new();
   SMARTLIST_FOREACH(with_transport_list, const char *, transport,
@@ -1735,7 +1734,9 @@ managed_proxy_stdout_callback(process_t *process, char *line, size_t size)
 
   managed_proxy_t *mp = process_get_data(process);
 
-  if (BUG(mp == NULL))
+  /* If our process have terminated us, it will detach from us and call
+   * process_set_data(mp->process, NULL). */
+  if (mp == NULL)
     return;
 
   handle_proxy_line(line, mp);
@@ -1759,7 +1760,9 @@ managed_proxy_stderr_callback(process_t *process, char *line, size_t size)
 
   managed_proxy_t *mp = process_get_data(process);
 
-  if (BUG(mp == NULL))
+  /* If our process have terminated us, it will detach from us and call
+   * process_set_data(mp->process, NULL). */
+  if (mp == NULL)
     return;
 
   log_warn(LD_PT, "Managed proxy at '%s' reported: %s", mp->argv[0], line);
@@ -1780,7 +1783,7 @@ managed_proxy_exit_callback(process_t *process, process_exit_code_t exit_code)
   /* We detach ourself from the MP (if we are attached) and free ourself. */
   managed_proxy_t *mp = process_get_data(process);
 
-  if (mp != NULL) {
+  if (BUG(mp != NULL)) {
     mp->process = NULL;
     process_set_data(process, NULL);
   }

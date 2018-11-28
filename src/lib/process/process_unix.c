@@ -379,6 +379,9 @@ process_unix_terminate(process_t *process)
     return false;
   }
 
+  int xxx = close(unix_process->stdin_handle.fd);
+  log_warn(LD_PROCESS, "close(stdin) = %d\n", xxx);
+
   return ret == 0;
 }
 
