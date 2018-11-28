@@ -625,6 +625,8 @@ process_notify_event_exit(process_t *process, process_exit_code_t exit_code)
   process_set_status(process, PROCESS_STATUS_NOT_RUNNING);
   process->exit_code = exit_code;
 
+  printf("PRE CALLBACK\n");
+
   /* Call our exit callback, if it exists. */
   if (process->exit_callback) {
     process->exit_callback(process, exit_code);

@@ -6,6 +6,7 @@
  * \brief Slow test cases for the Process API.
  */
 
+#define MAINLOOP_PRIVATE
 #include "orconfig.h"
 #include "core/or/or.h"
 #include "core/mainloop/mainloop.h"
@@ -101,6 +102,8 @@ process_exit_callback(process_t *process, process_exit_code_t exit_code)
   process_data_t *process_data = process_get_data(process);
   process_data->exit_code = exit_code;
 
+  printf("EXIT CODE: %ld\n", exit_code);
+
   /* Our process died. Let's check the values it returned. */
   tor_shutdown_event_loop_and_exit(0);
 
@@ -144,6 +147,7 @@ main_loop_timeout_cb(periodic_timer_t *timer, void *data)
 
 #ifndef _WIN32
   /* Call waitpid callbacks. */
+  printf("SIGNALS\n");
   notify_pending_waitpid_callbacks();
 #endif
 
@@ -168,7 +172,9 @@ run_main_loop(void)
                                                NULL);
 
   /* Run our main loop. */
-  ret = do_main_loop();
+  printf("MAIN LOOP ENTER\n");
+  ret = run_main_loop_until_done();
+  printf("MAIN LOOP EXIT\n");
 
   /* Clean up our main loop timeout timer. */
   tt_int_op(ret, OP_EQ, 0);
