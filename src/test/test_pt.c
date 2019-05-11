@@ -238,6 +238,15 @@ test_pt_protocol(void *arg)
   handle_proxy_line(line, mp);
   tt_assert(mp->conf_state == PT_PROTO_CONFIGURED);
 
+  /* Check features support. */
+  tt_assert(! mp->features_received);
+  tt_assert(! mp->dormant_supported);
+
+  strlcpy(line,"FEATURES dormant", sizeof(line));
+  handle_proxy_line(line, mp);
+  tt_assert(mp->features_received);
+  tt_assert(mp->dormant_supported);
+
  done:
   reset_mp(mp);
   smartlist_free(mp->transports);

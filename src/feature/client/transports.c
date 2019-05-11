@@ -92,6 +92,7 @@
 #define PT_PRIVATE
 #include "core/or/or.h"
 #include "feature/client/bridges.h"
+#include "feature/hibernate/hibernate.h"
 #include "app/config/config.h"
 #include "core/mainloop/connection.h"
 #include "core/or/circuitbuild.h"
@@ -131,6 +132,7 @@ static void parse_method_error(const char *line, int is_server_method);
 #define PROTO_PROXY_ERROR "PROXY-ERROR"
 #define PROTO_LOG "LOG"
 #define PROTO_STATUS "STATUS"
+#define PROTO_FEATURES "FEATURES"
 
 /** The first and only supported - at the moment - configuration
     protocol version. */
@@ -916,15 +918,19 @@ handle_proxy_line(const char *line, managed_proxy_t *mp)
     parse_proxy_error(line);
     goto err;
 
-    /* We check for the additional " " after the PROTO_LOG * PROTO_STATUS
-     * string to make sure we can later extend this big if/else-if table with
-     * something that begins with "LOG" without having to get the order right.
+    /* We check for the additional " " after the PROTO_LOG, PROTO_STATUS, and
+     * PROTO_FEATURES string to make sure we can later extend this big
+     * if/else-if table with something that begins with "LOG" without having to
+     * get the order right.
      * */
   } else if (!strcmpstart(line, PROTO_LOG " ")) {
     parse_log_line(line, mp);
     return;
   } else if (!strcmpstart(line, PROTO_STATUS " ")) {
     parse_status_line(line, mp);
+    return;
+  } else if (!strcmpstart(line, PROTO_FEATURES " ")) {
+    parse_features_line(line, mp);
     return;
   }
 
@@ -1213,6 +1219,46 @@ parse_log_line(const char *line, managed_proxy_t *mp)
   tor_free(log_message);
 }
 
+/** Parses a FEATURES <b>line</b> line for the given <b>mp</b>. */
+STATIC void
+parse_features_line(const char *line, managed_proxy_t *mp)
+{
+  tor_assert(line);
+  tor_assert(mp);
+
+  smartlist_t *features = NULL;
+
+  if (strlen(line) < (strlen(PROTO_FEATURES) + 1)) {
+    log_warn(LD_PT, "Managed proxy sent us a %s line "
+                    "with missing argument.", PROTO_FEATURES);
+    goto done;
+  }
+
+  if (mp->features_received) {
+    log_warn(LD_PT, "Managed proxy sent us a FEATURES line, "
+                    "but we already received one earlier.");
+    goto done;
+  }
+
+  /* Flag that we have received the FEATURES line. */
+  mp->features_received = true;
+
+  const char *data = line + strlen(PROTO_FEATURES) + 1;
+
+  features = smartlist_new();
+  smartlist_split_string(features, data, ",", 0, 0);
+
+  SMARTLIST_FOREACH_BEGIN(features, const char *, feature) {
+    /* Dormant mode feature extension. */
+    if (! strcmp(feature, "dormant"))
+      managed_proxy_enable_dormant_feature(mp);
+
+  } SMARTLIST_FOREACH_END(feature);
+
+ done:
+  smartlist_free(features);
+}
+
 /** Parses a STATUS <b>line</b> and emit control events accordingly. */
 STATIC void
 parse_status_line(const char *line, managed_proxy_t *mp)
@@ -1438,6 +1484,9 @@ create_managed_proxy_environment(const managed_proxy_t *mp)
    * as a reliable termination detection mechanism.
    */
   smartlist_add_asprintf(envs, "TOR_PT_EXIT_ON_STDIN_CLOSE=1");
+
+  /* Add a list of supported feature extensions. */
+  smartlist_add_asprintf(envs, "TOR_PT_FEATURES=dormant");
 
   SMARTLIST_FOREACH_BEGIN(envs, const char *, env_var) {
     set_environment_variable_in_smartlist(merged_env_vars, env_var,
@@ -1749,6 +1798,30 @@ sweep_proxy_list(void)
   assert_unconfigured_count_ok();
 }
 
+/** Notify all managed proxies that we entered dormant state. */
+void
+pt_notify_dormant_enter(void)
+{
+  if (! managed_proxy_list)
+    return;
+
+  SMARTLIST_FOREACH_BEGIN(managed_proxy_list, managed_proxy_t *, mp) {
+    managed_proxy_notify_dormant_enter(mp);
+  } SMARTLIST_FOREACH_END(mp);
+}
+
+/** Notify all managed proxies that we left dormant state. */
+void
+pt_notify_dormant_exit(void)
+{
+  if (! managed_proxy_list)
+    return;
+
+  SMARTLIST_FOREACH_BEGIN(managed_proxy_list, managed_proxy_t *, mp) {
+    managed_proxy_notify_dormant_exit(mp);
+  } SMARTLIST_FOREACH_END(mp);
+}
+
 /** Release all storage held by the pluggable transports subsystem. */
 void
 pt_free_all(void)
@@ -1874,6 +1947,69 @@ managed_proxy_exit_callback(process_t *process, process_exit_code_t exit_code)
   /* Returning true here means that the process subsystem will take care of
    * calling process_free() on our process_t. */
   return true;
+}
+
+/** Enable the Dormant feature extension of the given <b>mp</b>. */
+STATIC void
+managed_proxy_enable_dormant_feature(managed_proxy_t *mp)
+{
+  tor_assert(mp);
+
+  if (BUG(mp->dormant_supported))
+    return;
+
+  /* Enable the dormant support for the given managed proxy. */
+  mp->dormant_supported = true;
+
+  /* Tor is already in Dormant state. We should notify our managed proxy. */
+  if (accounting_tor_is_dormant())
+    managed_proxy_notify_dormant_enter(mp);
+}
+
+/** Notify the given managed proxy in <b>mp</b> that it should enter Dormant
+ * state. */
+STATIC void
+managed_proxy_notify_dormant_enter(managed_proxy_t *mp)
+{
+  tor_assert(mp);
+
+  /* Check if we are running? */
+  if (mp->conf_state != PT_PROTO_COMPLETED)
+    return;
+
+  /* Check if our managed proxy supports the Dormant extension feature. */
+  if (! mp->dormant_supported)
+    return;
+
+  /* Something's fishy? */
+  if (BUG(mp->dormant_entered))
+    return;
+
+  process_printf(mp->process, "DORMANT ENTER\n");
+  mp->dormant_entered = true;
+}
+
+/** Notify the given managed proxy in <b>mp</b> that it should exit Dormant
+ * state. */
+STATIC void
+managed_proxy_notify_dormant_exit(managed_proxy_t *mp)
+{
+  tor_assert(mp);
+
+  /* Check if we are running? */
+  if (mp->conf_state != PT_PROTO_COMPLETED)
+    return;
+
+  /* Check if our managed proxy supports the Dormant extension feature. */
+  if (! mp->dormant_supported)
+    return;
+
+  /* Something's fishy? */
+  if (BUG(! mp->dormant_entered))
+    return;
+
+  process_printf(mp->process, "DORMANT EXIT\n");
+  mp->dormant_entered = false;
 }
 
 /** Returns a valid integer log severity level from <b>severity</b> that

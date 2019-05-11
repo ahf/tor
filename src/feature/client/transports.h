@@ -62,6 +62,9 @@ void pt_free_all(void);
 void pt_prepare_proxy_list_for_config_read(void);
 void sweep_proxy_list(void);
 
+void pt_notify_dormant_enter(void);
+void pt_notify_dormant_exit(void);
+
 smartlist_t *get_transport_proxy_ports(void);
 char *pt_stringify_socks_args(const smartlist_t *socks_args);
 
@@ -116,6 +119,15 @@ typedef struct {
   /* The 'transports' list contains all the transports this proxy has
      launched. */
   smartlist_t *transports;
+
+  /** Boolean: Have this PT announced its features? */
+  bool features_received:1;
+
+  /** Boolean: Does this PT support the Dormant feature extension? */
+  bool dormant_supported:1;
+
+  /** Boolean: Have we sent DORMANT ENTER to this PT? */
+  bool dormant_entered:1;
 } managed_proxy_t;
 
 STATIC transport_t *transport_new(const tor_addr_t *addr, uint16_t port,
@@ -129,6 +141,7 @@ STATIC void parse_env_error(const char *line);
 STATIC void parse_proxy_error(const char *line);
 STATIC void handle_proxy_line(const char *line, managed_proxy_t *mp);
 STATIC void parse_log_line(const char *line, managed_proxy_t *mp);
+STATIC void parse_features_line(const char *line, managed_proxy_t *mp);
 STATIC void parse_status_line(const char *line, managed_proxy_t *mp);
 STATIC char *get_transport_options_for_server_proxy(const managed_proxy_t *mp);
 
@@ -147,6 +160,10 @@ STATIC void free_execve_args(char **arg);
 STATIC void managed_proxy_stdout_callback(process_t *, const char *, size_t);
 STATIC void managed_proxy_stderr_callback(process_t *, const char *, size_t);
 STATIC bool managed_proxy_exit_callback(process_t *, process_exit_code_t);
+
+STATIC void managed_proxy_enable_dormant_feature(managed_proxy_t *mp);
+STATIC void managed_proxy_notify_dormant_enter(managed_proxy_t *mp);
+STATIC void managed_proxy_notify_dormant_exit(managed_proxy_t *mp);
 
 STATIC int managed_proxy_severity_parse(const char *);
 
