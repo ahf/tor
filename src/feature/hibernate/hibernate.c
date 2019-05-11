@@ -61,8 +61,8 @@ hibernating, phase 2:
 #include <systemd/sd-daemon.h>
 #endif /* defined(HAVE_SYSTEMD) */
 
-/** Are we currently awake, asleep, running out of bandwidth, or shutting
- * down? */
+/** Are we currently awake, asleep, running out of bandwidth, dormant, or
+ * shutting down? */
 static hibernate_state_t hibernate_state = HIBERNATE_STATE_INITIAL;
 /** If are hibernating, when do we plan to wake up? Set to 0 if we
  * aren't hibernating. */
@@ -1257,6 +1257,13 @@ accounting_free_all(void)
   hibernate_state = HIBERNATE_STATE_INITIAL;
   hibernate_end_time = 0;
   shutdown_time = 0;
+}
+
+/** Returns true iff Tor is currently in a dormant state. */
+bool
+accounting_tor_is_dormant(void)
+{
+  return hibernate_state == HIBERNATE_STATE_DORMANT;
 }
 
 #ifdef TOR_UNIT_TESTS
