@@ -46,11 +46,6 @@ MOCK_DECL(void, pt_kickstart_proxy,
           (const smartlist_t *transport_list, char **proxy_argv,
            bool is_server));
 
-#define pt_kickstart_client_proxy(tl, pa)  \
-  pt_kickstart_proxy(tl, pa, false)
-#define pt_kickstart_server_proxy(tl, pa) \
-  pt_kickstart_proxy(tl, pa, true)
-
 void pt_configure_remaining_proxies(void);
 
 int pt_proxies_configuration_pending(void);

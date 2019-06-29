@@ -6127,11 +6127,7 @@ parse_transport_line(const or_options_t *options,
       *tmp = NULL; /* terminated with NULL, just like execve() likes it */
 
       /* kickstart the thing */
-      if (server) {
-        pt_kickstart_server_proxy(transport_list, proxy_argv);
-      } else {
-        pt_kickstart_client_proxy(transport_list, proxy_argv);
-      }
+      pt_kickstart_proxy(transport_list, proxy_argv, server);
     }
   } else {
     /* external */
