@@ -131,7 +131,8 @@ STATIC void managed_proxy_destroy(managed_proxy_t *mp,
                                   int also_terminate_process);
 
 STATIC managed_proxy_t *managed_proxy_create(const smartlist_t *transport_list,
-                                             char **proxy_argv, bool is_server);
+                                             char **proxy_argv,
+                                             bool is_server);
 
 STATIC int configure_proxy(managed_proxy_t *mp);
 
