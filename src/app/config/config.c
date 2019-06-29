@@ -6018,7 +6018,7 @@ parse_transport_line(const or_options_t *options,
   int socks_ver = PROXY_NONE;
 
   /* managed proxy options */
-  int is_managed = 0;
+  bool is_managed = false;
   char **proxy_argv = NULL;
   char **tmp = NULL;
   int proxy_argc, i;
@@ -6061,17 +6061,17 @@ parse_transport_line(const or_options_t *options,
 
   type = smartlist_get(items, 1);
   if (!strcmp(type, "exec")) {
-    is_managed = 1;
+    is_managed = true;
   } else if (server && !strcmp(type, "proxy")) {
     /* 'proxy' syntax only with ServerTransportPlugin */
-    is_managed = 0;
+    is_managed = false;
   } else if (!server && !strcmp(type, "socks4")) {
     /* 'socks4' syntax only with ClientTransportPlugin */
-    is_managed = 0;
+    is_managed = false;
     socks_ver = PROXY_SOCKS4;
   } else if (!server && !strcmp(type, "socks5")) {
     /* 'socks5' syntax only with ClientTransportPlugin */
-    is_managed = 0;
+    is_managed = false;
     socks_ver = PROXY_SOCKS5;
   } else {
     log_warn(LD_CONFIG,
