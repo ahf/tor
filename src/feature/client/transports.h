@@ -44,12 +44,12 @@ MOCK_DECL(transport_t*, transport_get_by_name, (const char *name));
 
 MOCK_DECL(void, pt_kickstart_proxy,
           (const smartlist_t *transport_list, char **proxy_argv,
-           int is_server));
+           bool is_server));
 
 #define pt_kickstart_client_proxy(tl, pa)  \
-  pt_kickstart_proxy(tl, pa, 0)
+  pt_kickstart_proxy(tl, pa, false)
 #define pt_kickstart_server_proxy(tl, pa) \
-  pt_kickstart_proxy(tl, pa, 1)
+  pt_kickstart_proxy(tl, pa, true)
 
 void pt_configure_remaining_proxies(void);
 
@@ -94,7 +94,7 @@ typedef struct {
   char *proxy_uri;  /* the outgoing proxy in TOR_PT_PROXY URI format */
   unsigned int proxy_supported : 1; /* the proxy honors TOR_PT_PROXY */
 
-  int is_server; /* is it a server proxy? */
+  bool is_server; /* is it a server proxy? */
 
   /* A pointer to the process of this managed proxy. */
   struct process_t *process;
@@ -136,7 +136,7 @@ STATIC void managed_proxy_destroy(managed_proxy_t *mp,
                                   int also_terminate_process);
 
 STATIC managed_proxy_t *managed_proxy_create(const smartlist_t *transport_list,
-                                             char **proxy_argv, int is_server);
+                                             char **proxy_argv, bool is_server);
 
 STATIC int configure_proxy(managed_proxy_t *mp);
 

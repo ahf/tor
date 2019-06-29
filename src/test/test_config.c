@@ -619,7 +619,7 @@ get_total_system_memory_mock(size_t *mem_out)
 /* Mocks needed for the transport plugin line test */
 
 static void pt_kickstart_proxy_mock(const smartlist_t *transport_list,
-                                    char **proxy_argv, int is_server);
+                                    char **proxy_argv, bool is_server);
 static int transport_add_from_config_mock(const tor_addr_t *addr,
                                           uint16_t port, const char *name,
                                           int socks_ver);
@@ -632,7 +632,7 @@ static int transport_is_needed_mock_return = 0;
 
 static void
 pt_kickstart_proxy_mock(const smartlist_t *transport_list,
-                        char **proxy_argv, int is_server)
+                        char **proxy_argv, bool is_server)
 {
   (void) transport_list;
   (void) proxy_argv;

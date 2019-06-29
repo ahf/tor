@@ -113,9 +113,9 @@ create_managed_proxy_environment(const managed_proxy_t *mp);
 static inline int proxy_configuration_finished(const managed_proxy_t *mp);
 
 static void handle_finished_proxy(managed_proxy_t *mp);
-static void parse_method_error(const char *line, int is_server_method);
-#define parse_server_method_error(l) parse_method_error(l, 1)
-#define parse_client_method_error(l) parse_method_error(l, 0)
+static void parse_method_error(const char *line, bool is_server_method);
+#define parse_server_method_error(l) parse_method_error(l, true)
+#define parse_client_method_error(l) parse_method_error(l, false)
 
 /** Managed proxy protocol strings */
 #define PROTO_ENV_ERROR "ENV-ERROR"
@@ -417,7 +417,7 @@ managed_proxy_has_argv(const managed_proxy_t *mp, char **proxy_argv)
 /** Return a managed proxy with the same argv as <b>proxy_argv</b>.
  *  If no such managed proxy exists, return NULL. */
 static managed_proxy_t *
-get_managed_proxy_by_argv_and_type(char **proxy_argv, int is_server)
+get_managed_proxy_by_argv_and_type(char **proxy_argv, bool is_server)
 {
   if (!managed_proxy_list)
     return NULL;
@@ -977,7 +977,7 @@ parse_version(const char *line, managed_proxy_t *mp)
  *  accordingly.  If <b>is_server</b> it is an SMETHOD-ERROR,
  *  otherwise it is a CMETHOD-ERROR. */
 static void
-parse_method_error(const char *line, int is_server)
+parse_method_error(const char *line, bool is_server)
 {
   const char* error = is_server ?
     PROTO_SMETHOD_ERROR : PROTO_CMETHOD_ERROR;
@@ -1457,7 +1457,7 @@ create_managed_proxy_environment(const managed_proxy_t *mp)
  * Requires that proxy_argv have at least one element. */
 STATIC managed_proxy_t *
 managed_proxy_create(const smartlist_t *with_transport_list,
-                     char **proxy_argv, int is_server)
+                     char **proxy_argv, bool is_server)
 {
   managed_proxy_t *mp = tor_malloc_zero(sizeof(managed_proxy_t));
   mp->conf_state = PT_PROTO_INFANT;
@@ -1493,7 +1493,7 @@ managed_proxy_create(const smartlist_t *with_transport_list,
  **/
 MOCK_IMPL(void,
 pt_kickstart_proxy, (const smartlist_t *with_transport_list,
-                     char **proxy_argv, int is_server))
+                     char **proxy_argv, bool is_server))
 {
   managed_proxy_t *mp=NULL;
   transport_t *old_transport = NULL;
