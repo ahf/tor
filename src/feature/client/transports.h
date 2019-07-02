@@ -13,6 +13,13 @@
 
 #include "lib/process/process.h"
 
+/** Rerepresents the type of transport. */
+typedef enum transport_type_t {
+  TRANSPORT_TYPE_EXECUTABLE     = 0, /**< The PT is an executable.    */
+  TRANSPORT_TYPE_SHARED_LIBRARY = 1, /**< The PT is a shared library. */
+  TRANSPORT_TYPE_STATIC_LIBRARY = 2, /**< The PT is a static library. */
+} transport_type_t;
+
 /** Represents a pluggable transport used by a bridge. */
 typedef struct transport_t {
   /** SOCKS version: One of PROXY_SOCKS4, PROXY_SOCKS5. */
@@ -44,7 +51,8 @@ MOCK_DECL(transport_t*, transport_get_by_name, (const char *name));
 
 MOCK_DECL(void, pt_kickstart_proxy,
           (const smartlist_t *transport_list, char **proxy_argv,
-           bool is_server));
+           bool is_server,
+           transport_type_t type));
 
 void pt_configure_remaining_proxies(void);
 
@@ -91,6 +99,9 @@ typedef struct {
 
   bool is_server; /* is it a server proxy? */
 
+  /** Are we an executable, shared library, or static library? */
+  transport_type_t type;
+
   /* A pointer to the process of this managed proxy. */
   struct process_t *process;
 
@@ -132,7 +143,8 @@ STATIC void managed_proxy_destroy(managed_proxy_t *mp,
 
 STATIC managed_proxy_t *managed_proxy_create(const smartlist_t *transport_list,
                                              char **proxy_argv,
-                                             bool is_server);
+                                             bool is_server,
+                                             transport_type_t type);
 
 STATIC int configure_proxy(managed_proxy_t *mp);
 

@@ -52,6 +52,18 @@
 /** Maximum number of file descriptors, if we cannot get it via sysconf() */
 #define DEFAULT_MAX_FD 256
 
+/** Internal state for Unix thread handle. */
+struct process_unix_thread_t {
+  /** Standard in FD for the thread to use. */
+  int stdin_fd;
+
+  /** Standard out FD for the thread to use. */
+  int stdout_fd;
+
+  /** Standard error FD for the thread to use. */
+  int stderr_fd;
+};
+
 /** Internal state for Unix handles. */
 struct process_unix_handle_t {
   /** Unix File Descriptor. */

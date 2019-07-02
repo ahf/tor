@@ -158,7 +158,8 @@ test_pt_get_transport_options(void *arg)
   execve_args[0] = tor_strdup("cheeseshop");
   execve_args[1] = NULL;
 
-  mp = managed_proxy_create(transport_list, execve_args, 1);
+  mp = managed_proxy_create(transport_list, execve_args, 1,
+                            TRANSPORT_TYPE_EXECUTABLE);
   tt_ptr_op(mp, OP_NE, NULL);
   opt_str = get_transport_options_for_server_proxy(mp);
   tt_ptr_op(opt_str, OP_EQ, NULL);
@@ -266,8 +267,8 @@ test_pt_get_extrainfo_string(void *arg)
   argv2[2] = tor_strdup("Schlangenkraft");
   argv2[3] = NULL;
 
-  mp1 = managed_proxy_create(t1, argv1, 1);
-  mp2 = managed_proxy_create(t2, argv2, 1);
+  mp1 = managed_proxy_create(t1, argv1, 1, TRANSPORT_TYPE_EXECUTABLE);
+  mp2 = managed_proxy_create(t2, argv2, 1, TRANSPORT_TYPE_EXECUTABLE);
 
   r = parse_smethod_line("SMETHOD hagbard 127.0.0.1:5555", mp1);
   tt_int_op(r, OP_EQ, 0);

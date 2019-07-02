@@ -710,6 +710,21 @@ test_config_parse_transport_plugin_line(void *arg)
   r = parse_transport_line(options,
       "transport_1,transport_2 exec /usr/bin/fake-transport", 1, 1);
   tt_int_op(r, OP_EQ, 0);
+
+  /* Test shared or static transport lines. */
+  r = parse_transport_line(options,
+                           "transport_1 shared /path/to/libfoo.so", 1, 0);
+  tt_int_op(r, OP_EQ, 0);
+  r = parse_transport_line(options,
+                           "transport_1 shared /path/to/libfoo.so", 1, 1);
+  tt_int_op(r, OP_EQ, 0);
+  r = parse_transport_line(options,
+                           "transport_1 static foo", 1, 0);
+  tt_int_op(r, OP_EQ, 0);
+  r = parse_transport_line(options,
+                           "transport_1 static foo", 1, 1);
+  tt_int_op(r, OP_EQ, 0);
+
   /* Bad transport identifiers */
   r = parse_transport_line(options,
       "transport_* exec /usr/bin/fake-transport", 1, 0);

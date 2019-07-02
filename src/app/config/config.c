@@ -6019,6 +6019,7 @@ parse_transport_line(const or_options_t *options,
 
   /* managed proxy options */
   bool is_managed = false;
+  transport_type_t managed_proxy_type = TRANSPORT_TYPE_EXECUTABLE;
   char **proxy_argv = NULL;
   char **tmp = NULL;
   int proxy_argc, i;
@@ -6062,6 +6063,13 @@ parse_transport_line(const or_options_t *options,
   type = smartlist_get(items, 1);
   if (!strcmp(type, "exec")) {
     is_managed = true;
+    managed_proxy_type = TRANSPORT_TYPE_EXECUTABLE;
+  } else if (!strcmp(type, "shared")) {
+    is_managed = true;
+    managed_proxy_type = TRANSPORT_TYPE_SHARED_LIBRARY;
+  } else if (!strcmp(type, "static")) {
+    is_managed = true;
+    managed_proxy_type = TRANSPORT_TYPE_STATIC_LIBRARY;
   } else if (server && !strcmp(type, "proxy")) {
     /* 'proxy' syntax only with ServerTransportPlugin */
     is_managed = false;
@@ -6088,7 +6096,9 @@ parse_transport_line(const or_options_t *options,
     goto err;
   }
 
-  if (is_managed && options->NoExec) {
+  if (is_managed &&
+      managed_proxy_type == TRANSPORT_TYPE_EXECUTABLE &&
+      options->NoExec) {
     log_warn(LD_CONFIG,
              "Managed proxies are not compatible with NoExec mode; ignoring."
              "(%sTransportPlugin line was %s)",
@@ -6127,7 +6137,10 @@ parse_transport_line(const or_options_t *options,
       *tmp = NULL; /* terminated with NULL, just like execve() likes it */
 
       /* kickstart the thing */
-      pt_kickstart_proxy(transport_list, proxy_argv, server);
+      pt_kickstart_proxy(transport_list,
+                         proxy_argv,
+                         server,
+                         managed_proxy_type);
     }
   } else {
     /* external */

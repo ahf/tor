@@ -23,6 +23,9 @@ struct process_t;
 struct process_unix_t;
 typedef struct process_unix_t process_unix_t;
 
+struct process_unix_thread_t;
+typedef sturct process_unix_thread_t process_unix_thread_t;
+
 process_unix_t *process_unix_new(void);
 void process_unix_free_(process_unix_t *unix_process);
 #define process_unix_free(s) \

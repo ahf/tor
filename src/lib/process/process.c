@@ -32,6 +32,13 @@ static smartlist_t *processes;
  **/
 static int may_spawn_background_process = 1;
 
+/** How should our process_t be executed? */
+typedef enum process_execution_method_t {
+  PROCESS_EXECUTION_METHOD_PROCESS        = 0, /**< Run as a process. */
+  PROCESS_EXECUTION_METHOD_SHARED_LIBRARY = 1, /**< Load shared library. */
+  PROCESS_EXECUTION_METHOD_STATIC_LIBRARY = 2, /**< Use static symbols. */
+} process_execution_method_t;
+
 /** Structure to represent a child process. */
 struct process_t {
   /** Process status. */
@@ -51,6 +58,9 @@ struct process_t {
 
   /** Our exit code when the process have terminated. */
   process_exit_code_t exit_code;
+
+  /** Our execution method for the backends. */
+  process_execution_method_t execution_method;
 
   /** Name of the command we want to execute (for example: /bin/ls). */
   char *command;
@@ -194,6 +204,9 @@ process_new(const char *command)
   process->arguments = smartlist_new();
   process->environment = smartlist_new();
 
+  /* We are going to run as a process. */
+  process->execution_method = PROCESS_EXECUTION_METHOD_PROCESS;
+
   /* Prepare the buffers. */
   process->stdout_buffer = buf_new();
   process->stderr_buffer = buf_new();
@@ -208,6 +221,28 @@ process_new(const char *command)
 #endif /* !defined(_WIN32) */
 
   smartlist_add(processes, process);
+
+  return process;
+}
+
+process_t *
+process_new_shared(const char *shared_library)
+{
+  process_t *process = process_new(shared_library);
+
+  /* We are going to run as a shared library. */
+  process->execution_method = PROCESS_EXECUTION_METHOD_SHARED_LIBRARY;
+
+  return process;
+}
+
+process_t *
+process_new_static(void)
+{
+  process_t *process = process_new("<static>");
+
+  /* We are going to run as a static library. */
+  process->execution_method = PROCESS_EXECUTION_METHOD_STATIC_LIBRARY;
 
   return process;
 }

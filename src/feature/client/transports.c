@@ -417,14 +417,17 @@ managed_proxy_has_argv(const managed_proxy_t *mp, char **proxy_argv)
 /** Return a managed proxy with the same argv as <b>proxy_argv</b>.
  *  If no such managed proxy exists, return NULL. */
 static managed_proxy_t *
-get_managed_proxy_by_argv_and_type(char **proxy_argv, bool is_server)
+get_managed_proxy_by_argv_and_type(char **proxy_argv,
+                                   bool is_server,
+                                   transport_type_t type)
 {
   if (!managed_proxy_list)
     return NULL;
 
   SMARTLIST_FOREACH_BEGIN(managed_proxy_list,  managed_proxy_t *, mp) {
     if (managed_proxy_has_argv(mp, proxy_argv) &&
-        mp->is_server == is_server)
+        mp->is_server == is_server &&
+        mp->type == type)
       return mp;
   } SMARTLIST_FOREACH_END(mp);
 
@@ -1457,7 +1460,8 @@ create_managed_proxy_environment(const managed_proxy_t *mp)
  * Requires that proxy_argv have at least one element. */
 STATIC managed_proxy_t *
 managed_proxy_create(const smartlist_t *with_transport_list,
-                     char **proxy_argv, bool is_server)
+                     char **proxy_argv, bool is_server,
+                     transport_type_t type)
 {
   managed_proxy_t *mp = tor_malloc_zero(sizeof(managed_proxy_t));
   mp->conf_state = PT_PROTO_INFANT;
@@ -1465,11 +1469,18 @@ managed_proxy_create(const smartlist_t *with_transport_list,
   mp->argv = proxy_argv;
   mp->transports = smartlist_new();
   mp->proxy_uri = get_pt_proxy_uri();
-  mp->process = process_new(proxy_argv[0]);
+  mp->type = type;
 
   mp->transports_to_launch = smartlist_new();
   SMARTLIST_FOREACH(with_transport_list, const char *, transport,
                     add_transport_to_proxy(transport, mp));
+
+  if (type == TRANSPORT_TYPE_EXECUTABLE)
+    mp->process = process_new(proxy_argv[0]);
+  else if (type == TRANSPORT_TYPE_SHARED_LIBRARY)
+    mp->process = process_new_shared(proxy_argv[0]);
+  else if (type == TRANSPORT_TYPE_STATIC_LIBRARY)
+    mp->process = process_new_static();
 
   /* register the managed proxy */
   if (!managed_proxy_list)
@@ -1493,7 +1504,8 @@ managed_proxy_create(const smartlist_t *with_transport_list,
  **/
 MOCK_IMPL(void,
 pt_kickstart_proxy, (const smartlist_t *with_transport_list,
-                     char **proxy_argv, bool is_server))
+                     char **proxy_argv, bool is_server,
+                     transport_type_t type))
 {
   managed_proxy_t *mp=NULL;
   transport_t *old_transport = NULL;
@@ -1502,10 +1514,10 @@ pt_kickstart_proxy, (const smartlist_t *with_transport_list,
     return;
   }
 
-  mp = get_managed_proxy_by_argv_and_type(proxy_argv, is_server);
+  mp = get_managed_proxy_by_argv_and_type(proxy_argv, is_server, type);
 
   if (!mp) { /* we haven't seen this proxy before */
-    managed_proxy_create(with_transport_list, proxy_argv, is_server);
+    managed_proxy_create(with_transport_list, proxy_argv, is_server, type);
 
   } else { /* known proxy. add its transport to its transport list */
     if (mp->was_around_before_config_read) {

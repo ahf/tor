@@ -66,6 +66,9 @@ void process_free_all(void);
 const struct smartlist_t *process_get_all_processes(void);
 
 process_t *process_new(const char *command);
+process_t *process_new_shared(const char *shared_library);
+process_t *process_new_static(void);
+
 void process_free_(process_t *process);
 #define process_free(s) FREE_AND_NULL(process_t, process_free_, (s))
 
