@@ -117,6 +117,7 @@
 #include "lib/encoding/confline.h"
 #include "lib/net/resolve.h"
 #include "lib/sandbox/sandbox.h"
+#include "lib/vault/vault.h"
 #include "lib/version/torversion.h"
 
 #ifdef ENABLE_NSS
@@ -739,6 +740,7 @@ static config_var_t option_vars_[] = {
   V(TestingDirAuthVoteHSDir, ROUTERSET, NULL),
   V(TestingDirAuthVoteHSDirIsStrict,  BOOL,     "0"),
   VAR("___UsingTestNetworkDefaults", BOOL, UsingTestNetworkDefaults_, "0"),
+  V(Vault, STRING, NULL),
 
   END_OF_CONFIG_VARS
 };
@@ -2091,6 +2093,14 @@ options_act(const or_options_t *old_options)
   /* Change the cell EWMA settings */
   cmux_ewma_set_options(options, networkstatus_get_latest_consensus());
 
+  /* Handle Vault line. */
+  if (parse_vault_line(options, false) < 0) {
+    /* LCOV_EXCL_START */
+    log_warn(LD_BUG, "Error in previously validated Vault options");
+    return -1;
+    /* LCOV_EXCL_STOP */
+  }
+
   /* Update the BridgePassword's hashed version as needed.  We store this as a
    * digest so that we can do side-channel-proof comparisons on it.
    */
@@ -3430,6 +3440,10 @@ options_validate(or_options_t *old_options, or_options_t *options,
   if (options_init_logs(old_options, options, 1)<0)
     REJECT("Failed to validate Log options. See logs for details.");
 
+  /* Validate Vault option. */
+  if (parse_vault_line(options, true) < 0)
+    REJECT("Failed to validate Vault option. See logs for details.");
+
   if (authdir_mode(options)) {
     /* confirm that our address isn't broken, so we can complain now */
     uint32_t tmp;
@@ -4741,6 +4755,7 @@ options_transition_allowed(const or_options_t *old,
   NO_CHANGE_BOOL(NoExec);
   NO_CHANGE_INT(OwningControllerFD);
   NO_CHANGE_BOOL(DisableSignalHandlers);
+  NO_CHANGE_STRING(Vault);
 
   if (sandbox_is_active()) {
 #define SB_NOCHANGE_STR(opt)                      \
@@ -5649,6 +5664,60 @@ addressmap_register_auto(const char *from, const char *to,
                       from_wildcard, to_wildcard);
 
   return 0;
+}
+
+/** Read the content of a Vault line from <b>line</b>. Return 0 iff the line is
+ * well-formed and -1 if it is not. */
+STATIC int
+parse_vault_line(const or_options_t *options,
+                 bool validate_only)
+{
+  tor_assert(options);
+
+  if (options->Vault == NULL)
+    return 0;
+
+  int ret = 0;
+
+  /* Parse: "exec /path/to/vault/binary argv[1] ...". */
+  smartlist_t *items = smartlist_new();
+  smartlist_split_string(items, options->Vault, NULL,
+                         SPLIT_SKIP_SPACE|SPLIT_IGNORE_BLANK, 2);
+  size_t items_count = smartlist_len(items);
+
+  if (items_count != 2) {
+    log_warn(LD_CONFIG, "Too few arguments on Vault line.");
+    goto err;
+  }
+
+  const char *vault_type = smartlist_get(items, 0);
+
+  /* We currently only support executable Vaults. */
+  if (! strcmp(vault_type, "exec")) {
+    if (options->NoExec) {
+        log_warn(LD_CONFIG,
+                 "Executable Vault's are not compatible with NoExec.");
+        goto err;
+    }
+
+    if (! validate_only) {
+      const char *vault_path = smartlist_get(items, 1);
+      vault_exec_configure(vault_path);
+    }
+
+    goto done;
+  } else {
+    log_warn(LD_CONFIG, "Unknown Vault type '%s'.", vault_type);
+    goto err;
+  }
+
+ err:
+  ret = -1;
+
+ done:
+  SMARTLIST_FOREACH(items, char *, s, tor_free(s));
+  smartlist_free(items);
+  return ret;
 }
 
 /**

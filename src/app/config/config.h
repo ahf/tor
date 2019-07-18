@@ -292,6 +292,7 @@ STATIC uint64_t compute_real_max_mem_in_queues(const uint64_t val,
 STATIC int open_and_add_file_log(const log_severity_list_t *severity,
                                  const char *fname,
                                  int truncate_log);
+STATIC int parse_vault_line(const or_options_t *, bool);
 
 #endif /* defined(CONFIG_PRIVATE) */
 

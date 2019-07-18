@@ -1,0 +1,25 @@
+
+noinst_LIBRARIES += src/lib/libtor-vault.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-vault-testing.a
+endif
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+src_lib_libtor_vault_a_SOURCES = \
+	src/lib/vault/vault.c		\
+	src/lib/vault/vault_command.c	\
+	src/lib/vault/vault_process.c	\
+	src/lib/vault/vault_sys.c
+
+src_lib_libtor_vault_testing_a_SOURCES = \
+	$(src_lib_libtor_vault_a_SOURCES)
+src_lib_libtor_vault_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_vault_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS += \
+	src/lib/vault/vault.h		\
+	src/lib/vault/vault_command.h	\
+	src/lib/vault/vault_process.h	\
+	src/lib/vault/vault_sys.h

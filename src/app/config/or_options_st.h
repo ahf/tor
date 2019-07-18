@@ -1107,6 +1107,11 @@ struct or_options_t {
    * a possible previous dormant state.
    **/
   int DormantCanceledByStartup;
+
+  /**
+   * Vault used by Tor.
+   */
+  char *Vault;
 };
 
 #endif /* !defined(TOR_OR_OPTIONS_ST_H) */

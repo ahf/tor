@@ -24,6 +24,7 @@
 #include "lib/thread/thread_sys.h"
 #include "lib/time/time_sys.h"
 #include "lib/tls/tortls_sys.h"
+#include "lib/vault/vault_sys.h"
 #include "lib/wallclock/wallclock_sys.h"
 #include "lib/evloop/evloop_sys.h"
 
@@ -46,6 +47,7 @@ const subsys_fns_t *tor_subsystems[] = {
   &sys_crypto, /* -60 */
   &sys_tortls, /* -50 */
   &sys_process, /* -35 */
+  &sys_vault, /* -34 */
 
   &sys_orconn_event, /* -33 */
   &sys_ocirc_event, /* -32 */
