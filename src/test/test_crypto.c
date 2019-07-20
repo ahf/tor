@@ -1259,7 +1259,7 @@ test_crypto_pk_fingerprints(void *arg)
 }
 
 static void
-test_crypto_pk_base64(void *arg)
+test_crypto_pk_base64_private(void *arg)
 {
   crypto_pk_t *pk1 = NULL;
   crypto_pk_t *pk2 = NULL;
@@ -1286,6 +1286,42 @@ test_crypto_pk_base64(void *arg)
 
   /* Test decoding a truncated Base64 blob. */
   pk2 = crypto_pk_base64_decode_private(encoded, strlen(encoded)/2);
+  tt_ptr_op(pk2, OP_EQ, NULL);
+
+ done:
+  crypto_pk_free(pk1);
+  crypto_pk_free(pk2);
+  tor_free(encoded);
+}
+
+static void
+test_crypto_pk_base64_public(void *arg)
+{
+  crypto_pk_t *pk1 = NULL;
+  crypto_pk_t *pk2 = NULL;
+  char *encoded = NULL;
+
+  (void)arg;
+
+  /* Test Base64 encoding a key. */
+  pk1 = pk_generate(0);
+  tt_assert(pk1);
+  tt_int_op(0, OP_EQ, crypto_pk_base64_encode_public(pk1, &encoded));
+  tt_assert(encoded);
+
+  /* Test decoding a valid key. */
+  pk2 = crypto_pk_base64_decode_public(encoded, strlen(encoded));
+  tt_assert(pk2);
+  tt_int_op(crypto_pk_cmp_keys(pk1, pk2), OP_EQ, 0);
+  crypto_pk_free(pk2);
+
+  /* Test decoding a invalid key (not Base64). */
+  static const char *invalid_b64 = "The key is in another castle!";
+  pk2 = crypto_pk_base64_decode_public(invalid_b64, strlen(invalid_b64));
+  tt_ptr_op(pk2, OP_EQ, NULL);
+
+  /* Test decoding a truncated Base64 blob. */
+  pk2 = crypto_pk_base64_decode_public(encoded, strlen(encoded)/2);
   tt_ptr_op(pk2, OP_EQ, NULL);
 
  done:
@@ -2996,7 +3032,8 @@ struct testcase_t crypto_tests[] = {
   CRYPTO_LEGACY(sha),
   CRYPTO_LEGACY(pk),
   { "pk_fingerprints", test_crypto_pk_fingerprints, TT_FORK, NULL, NULL },
-  { "pk_base64", test_crypto_pk_base64, TT_FORK, NULL, NULL },
+  { "pk_base64_private", test_crypto_pk_base64_private, TT_FORK, NULL, NULL },
+  { "pk_base64_public", test_crypto_pk_base64_public, TT_FORK, NULL, NULL },
   { "pk_pem_encrypted", test_crypto_pk_pem_encrypted, TT_FORK, NULL, NULL },
   { "pk_invalid_private_key", test_crypto_pk_invalid_private_key, 0,
     NULL, NULL },

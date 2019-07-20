@@ -9,6 +9,7 @@
  * \brief Block of functions related with RSA utilities and operations.
  **/
 
+#define CRYPTO_RSA_PRIVATE
 #include "lib/crypt_ops/crypto_cipher.h"
 #include "lib/crypt_ops/crypto_curve25519.h"
 #include "lib/crypt_ops/crypto_digest.h"
@@ -617,13 +618,63 @@ crypto_pk_write_private_key_to_filename(crypto_pk_t *env,
 int
 crypto_pk_base64_encode_private(const crypto_pk_t *pk, char **priv_out)
 {
+  return crypto_pk_base64_encode_generic(pk, priv_out, true);
+}
+
+/** Given a string containing the Base64 encoded DER representation of the
+ * private key <b>str</b>, decode and return the result on success, or NULL
+ * on failure.
+ */
+crypto_pk_t *
+crypto_pk_base64_decode_private(const char *str, size_t len)
+{
+  return crypto_pk_base64_decode_generic(str, len, true);
+}
+
+/** Given a crypto_pk_t <b>pk</b>, allocate a new buffer containing the
+ * Base64 encoding of the DER representation of the public key as a NUL
+ * terminated string, and return it via <b>pub_out</b>.  Return 0 on
+ * success, -1 on failure.
+ *
+ * It is the caller's responsibility to sanitize and free the resulting buffer.
+ */
+int
+crypto_pk_base64_encode_public(const crypto_pk_t *pk, char **pub_out)
+{
+  return crypto_pk_base64_encode_generic(pk, pub_out, false);
+}
+
+/** Given a string containing the Base64 encoded DER representation of the
+ *  public key <b>str</b>, decode and return the result on success, or NULL
+ *  on failure.
+ */
+crypto_pk_t *
+crypto_pk_base64_decode_public(const char *str, size_t len)
+{
+  return crypto_pk_base64_decode_generic(str, len, false);
+}
+
+/** Given a crypto_pk_t <b>pk</b>, allocate a new buffer containing the
+ * Base64 encoding of the DER representation of the RSA key as a NUL
+ * terminated string, and return it via <b>out</b>.  Return 0 on
+ * success, -1 on failure. Use <b>private_key</b> to specify whether the RSA key
+ * found in <b>pk</b> is a private or public RSA key.
+ *
+ * It is the caller's responsibility to sanitize and free the resulting buffer.
+ */
+STATIC int
+crypto_pk_base64_encode_generic(const crypto_pk_t *pk,
+                                char **out,
+                                bool private_key)
+{
   size_t buflen = crypto_pk_keysize(pk)*16;
   char *buf = tor_malloc(buflen);
   char *result = NULL;
   size_t reslen = 0;
   bool ok = false;
 
-  int n = crypto_pk_asn1_encode_private(pk, buf, buflen);
+  int n = private_key ? crypto_pk_asn1_encode_private(pk, buf, buflen)
+                      : crypto_pk_asn1_encode(pk, buf, buflen);
 
   if (n < 0)
     goto done;
@@ -642,27 +693,32 @@ crypto_pk_base64_encode_private(const crypto_pk_t *pk, char **priv_out)
     memwipe(result, 0, reslen);
     tor_free(result);
   }
-  *priv_out = result;
+  *out = result;
   return ok ? 0 : -1;
 }
 
-/** Given a string containing the Base64 encoded DER representation of the
- * private key <b>str</b>, decode and return the result on success, or NULL
- * on failure.
+/** Given a string containing the Base64 encoded DER representation of the RSA
+ * key <b>str</b>, decode and return the result on success, or NULL on failure.
+ * Use <b>private_key</b> to specify whether the key is a private or public RSA
+ * key.
  */
-crypto_pk_t *
-crypto_pk_base64_decode_private(const char *str, size_t len)
+STATIC crypto_pk_t *
+crypto_pk_base64_decode_generic(const char *str,
+                                size_t len,
+                                bool private_key)
 {
   crypto_pk_t *pk = NULL;
 
   char *der = tor_malloc_zero(len + 1);
   int der_len = base64_decode(der, len, str, len);
   if (der_len <= 0) {
-    log_warn(LD_CRYPTO, "Stored RSA private key seems corrupted (base64).");
+    log_warn(LD_CRYPTO, "Stored RSA %s key seems corrupted (base64).",
+             private_key ? "private" : "public");
     goto out;
   }
 
-  pk = crypto_pk_asn1_decode_private(der, der_len);
+  pk = private_key ? crypto_pk_asn1_decode_private(der, der_len)
+                   : crypto_pk_asn1_decode(der, der_len);
 
  out:
   memwipe(der, 0, len+1);

@@ -109,6 +109,8 @@ int crypto_pk_get_common_digests(crypto_pk_t *pk,
                                  common_digests_t *digests_out);
 int crypto_pk_base64_encode_private(const crypto_pk_t *pk, char **priv_out);
 crypto_pk_t *crypto_pk_base64_decode_private(const char *str, size_t len);
+int crypto_pk_base64_encode_public(const crypto_pk_t *pk, char **pub_out);
+crypto_pk_t *crypto_pk_base64_decode_public(const char *str, size_t len);
 
 #ifdef ENABLE_OPENSSL
 /* Prototypes for private functions only used by tortls.c, crypto.c, and the
@@ -141,5 +143,14 @@ STATIC int secitem_uint_cmp(const struct SECItemStr *a,
                             const struct SECItemStr *b);
 #endif
 #endif /* defined(TOR_UNIT_TESTS) */
+
+#ifdef CRYPTO_RSA_PRIVATE
+STATIC int crypto_pk_base64_encode_generic(const crypto_pk_t *,
+                                           char **,
+                                           bool);
+STATIC crypto_pk_t *crypto_pk_base64_decode_generic(const char *,
+                                                    size_t,
+                                                    bool);
+#endif /* defined(CRYPTO_RSA_PRIVATE) */
 
 #endif /* !defined(TOR_CRYPTO_RSA_H) */
