@@ -3,6 +3,7 @@
  * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
+#define ROUTER_PRIVATE
 #define RENDCOMMON_PRIVATE
 #define GEOIP_PRIVATE
 #define CONNECTION_PRIVATE

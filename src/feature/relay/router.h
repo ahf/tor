@@ -27,7 +27,6 @@ struct ed25519_keypair_t;
 
 MOCK_DECL(crypto_pk_t *,get_onion_key,(void));
 time_t get_onion_key_set_at(void);
-void set_server_identity_key(crypto_pk_t *k);
 MOCK_DECL(crypto_pk_t *,get_server_identity_key,(void));
 int server_identity_key_is_set(void);
 void set_client_identity_key(crypto_pk_t *k);
@@ -119,6 +118,7 @@ void router_free_all(void);
 STATIC void get_platform_str(char *platform, size_t len);
 STATIC int router_write_fingerprint(int hashed);
 STATIC smartlist_t *get_my_declared_family(const or_options_t *options);
+STATIC void set_server_identity_key(crypto_pk_t *k);
 
 #ifdef TOR_UNIT_TESTS
 extern time_t desc_clean_since;

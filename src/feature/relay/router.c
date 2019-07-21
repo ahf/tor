@@ -333,7 +333,7 @@ get_onion_key_set_at(void)
 
 /** Set the current server identity key to <b>k</b>.
  */
-void
+STATIC void
 set_server_identity_key(crypto_pk_t *k)
 {
   crypto_pk_free(server_identitykey);
