@@ -654,11 +654,11 @@ crypto_pk_base64_decode_public(const char *str, size_t len)
   return crypto_pk_base64_decode_generic(str, len, false);
 }
 
-/** Given a crypto_pk_t <b>pk</b>, allocate a new buffer containing the
- * Base64 encoding of the DER representation of the RSA key as a NUL
- * terminated string, and return it via <b>out</b>.  Return 0 on
- * success, -1 on failure. Use <b>private_key</b> to specify whether the RSA key
- * found in <b>pk</b> is a private or public RSA key.
+/** Given a crypto_pk_t <b>pk</b>, allocate a new buffer containing the Base64
+ * encoding of the DER representation of the RSA key as a NUL terminated
+ * string, and return it via <b>out</b>.  Return 0 on success, -1 on failure.
+ * Use <b>private_key</b> to specify whether the RSA key found in <b>pk</b> is
+ * a private or public RSA key.
  *
  * It is the caller's responsibility to sanitize and free the resulting buffer.
  */
