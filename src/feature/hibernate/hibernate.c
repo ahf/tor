@@ -614,11 +614,7 @@ accounting_set_wakeup_time(void)
   if (server_identity_key_is_set()) {
     char buf[ISO_TIME_LEN+1];
     format_iso_time(buf, interval_start_time);
-
-    if (crypto_pk_get_digest(get_server_identity_key(), digest) < 0) {
-      log_err(LD_BUG, "Error getting our key's digest.");
-      tor_assert(0);
-    }
+    memcpy(digest, router_get_my_id_digest(), sizeof(digest));
 
     d_env = crypto_digest_new();
     crypto_digest_add_bytes(d_env, buf, ISO_TIME_LEN);
