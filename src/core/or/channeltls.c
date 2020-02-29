@@ -62,6 +62,7 @@
 #include "trunnel/channelpadding_negotiation.h"
 #include "trunnel/netinfo.h"
 #include "core/or/channelpadding.h"
+#include "feature/timetrack/timetrack.h"
 
 #include "core/or/cell_st.h"
 #include "core/or/cell_queue_st.h"
@@ -1788,6 +1789,8 @@ channel_tls_process_netinfo_cell(cell_t *cell, channel_tls_t *chan)
 
   my_addr_type = netinfo_addr_get_addr_type(my_addr);
   my_addr_len = netinfo_addr_get_len(my_addr);
+
+  timetrack_add_observation(timestamp);
 
   if ((now - chan->conn->handshake_state->sent_versions_at) < 180) {
     apparent_skew = now - timestamp;

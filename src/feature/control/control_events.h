@@ -223,6 +223,8 @@ void control_event_hs_descriptor_content(const char *onion_address,
                                          const char *hsdir_fp,
                                          const char *content);
 
+void control_event_timetrack_timestamp(time_t timestamp);
+
 void control_events_free_all(void);
 
 #ifdef CONTROL_MODULE_PRIVATE
@@ -281,7 +283,8 @@ typedef uint64_t event_mask_t;
 #define EVENT_NETWORK_LIVENESS        0x0023
 #define EVENT_PT_LOG                  0x0024
 #define EVENT_PT_STATUS               0x0025
-#define EVENT_MAX_                    0x0025
+#define EVENT_TIMETRACK_TIMESTAMP     0x0026
+#define EVENT_MAX_                    0x0026
 
 /* sizeof(control_connection_t.event_mask) in bits, currently a uint64_t */
 #define EVENT_CAPACITY_               0x0040

@@ -2278,6 +2278,17 @@ control_event_hs_descriptor_upload_failed(const char *id_digest,
 }
 
 void
+control_event_timetrack_timestamp(time_t timestamp)
+{
+  char buf[ISO_TIME_LEN + 1];
+  format_iso_time_nospace(buf, timestamp);
+
+  send_control_event(EVENT_TIMETRACK_TIMESTAMP,
+                     "650 TIMETRACK_TIMESTAMP %s\r\n",
+                     buf);
+}
+
+void
 control_events_free_all(void)
 {
   smartlist_t *queued_events = NULL;

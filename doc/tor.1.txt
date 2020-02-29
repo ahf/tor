@@ -692,7 +692,7 @@ forward slash (/) in the configuration file and on the command line.
     The currently recognized domains are: general, crypto, net, config, fs,
     protocol, mm, http, app, control, circ, rend, bug, dir, dirserv, or, edge,
     acct, hist, handshake, heartbeat, channel, sched, guard, consdiff, dos,
-    process, pt, btrack, and mesg.
+    process, pt, btrack, mesg, and timetrack.
     Domain names are case-insensitive. +
      +
     For example, "`Log [handshake]debug [~net,~mm]info notice stdout`" sends
