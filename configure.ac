@@ -332,6 +332,9 @@ m4_ifdef([AM_PROG_AR],
           AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL([AR], [ar], [:])])
           AC_PROG_AR])
 
+dnl Enable libtool.
+LT_INIT
+
 dnl Check whether the above macro has settled for a simply named tool even
 dnl though we're cross compiling. We must do this before running AC_PROG_CC,
 dnl because that will find any cc on the system, not only the cross-compiler,
@@ -349,7 +352,6 @@ fi
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_MAKE_SET
-AC_PROG_RANLIB
 AC_PROG_SED
 
 AC_ARG_VAR([PERL], [path to Perl binary])
