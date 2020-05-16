@@ -15,7 +15,7 @@ noinst_HEADERS +=					\
 	src/feature/dircache/dirserv.h
 
 if BUILD_MODULE_DIRCACHE
-LIBTOR_APP_A_SOURCES += $(MODULE_DIRCACHE_SOURCES)
+LIBTOR_APP_LA_SOURCES += $(MODULE_DIRCACHE_SOURCES)
 else
-LIBTOR_APP_A_STUB_SOURCES += src/feature/dircache/dircache_stub.c
+LIBTOR_APP_LA_STUB_SOURCES += src/feature/dircache/dircache_stub.c
 endif

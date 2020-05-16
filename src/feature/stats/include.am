@@ -1,6 +1,6 @@
 
 # ADD_C_FILE: INSERT SOURCES HERE.
-LIBTOR_APP_A_SOURCES += 			\
+LIBTOR_APP_LA_SOURCES += 			\
 	src/feature/stats/geoip_stats.c		\
 	src/feature/stats/rephist.c		\
 	src/feature/stats/predict_ports.c

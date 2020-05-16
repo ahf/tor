@@ -44,16 +44,16 @@ include src/lib/version/include.am
 include src/lib/wallclock/include.am
 include src/trunnel/include.am
 
-noinst_LIBRARIES += src/core/libtor-app.a
+noinst_LTLIBRARIES += src/core/libtor-app.la
 if UNITTESTS_ENABLED
-noinst_LIBRARIES += src/core/libtor-app-testing.a
+noinst_LTLIBRARIES += src/core/libtor-app-testing.la
 endif
 
-LIBTOR_APP_A_SOURCES =
+LIBTOR_APP_LA_SOURCES =
 #
 # Sources that we only add for the real libtor_a, and not for testing.
 #
-LIBTOR_APP_A_STUB_SOURCES =
+LIBTOR_APP_LA_STUB_SOURCES =
 
 include src/core/crypto/include.am
 include src/core/mainloop/include.am

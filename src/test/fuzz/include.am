@@ -343,125 +343,125 @@ endif
 
 if OSS_FUZZ_ENABLED
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_consensus_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_consensus_la_SOURCES = \
 	$(src_test_fuzz_fuzz_consensus_SOURCES)
-src_test_fuzz_liboss_fuzz_consensus_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_consensus_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_consensus_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_consensus_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_descriptor_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_descriptor_la_SOURCES = \
 	$(src_test_fuzz_fuzz_descriptor_SOURCES)
-src_test_fuzz_liboss_fuzz_descriptor_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_descriptor_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_descriptor_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_descriptor_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_diff_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_diff_la_SOURCES = \
 	$(src_test_fuzz_fuzz_diff_SOURCES)
-src_test_fuzz_liboss_fuzz_diff_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_diff_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_diff_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_diff_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_diff_apply_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_diff_apply_la_SOURCES = \
 	$(src_test_fuzz_fuzz_diff_apply_SOURCES)
-src_test_fuzz_liboss_fuzz_diff_apply_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_diff_apply_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_diff_apply_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_diff_apply_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_extrainfo_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_extrainfo_la_SOURCES = \
 	$(src_test_fuzz_fuzz_extrainfo_SOURCES)
-src_test_fuzz_liboss_fuzz_extrainfo_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_extrainfo_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_extrainfo_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_extrainfo_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_hsdescv2_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_hsdescv2_la_SOURCES = \
 	$(src_test_fuzz_fuzz_hsdescv2_SOURCES)
-src_test_fuzz_liboss_fuzz_hsdescv2_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_hsdescv2_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_hsdescv2_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_hsdescv2_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_hsdescv3_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_hsdescv3_la_SOURCES = \
 	$(src_test_fuzz_fuzz_hsdescv3_SOURCES)
-src_test_fuzz_liboss_fuzz_hsdescv3_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_hsdescv3_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_hsdescv3_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_hsdescv3_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_http_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_http_la_SOURCES = \
 	$(src_test_fuzz_fuzz_http_SOURCES)
-src_test_fuzz_liboss_fuzz_http_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_http_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_http_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_http_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_http_connect_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_http_connect_la_SOURCES = \
 	$(src_test_fuzz_fuzz_http_connect_SOURCES)
-src_test_fuzz_liboss_fuzz_http_connect_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_http_connect_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_http_connect_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_http_connect_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_iptsv2_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_iptsv2_la_SOURCES = \
 	$(src_test_fuzz_fuzz_iptsv2_SOURCES)
-src_test_fuzz_liboss_fuzz_iptsv2_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_iptsv2_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_iptsv2_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_iptsv2_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_microdesc_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_microdesc_la_SOURCES = \
 	$(src_test_fuzz_fuzz_microdesc_SOURCES)
-src_test_fuzz_liboss_fuzz_microdesc_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_microdesc_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_microdesc_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_microdesc_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_socks_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_socks_la_SOURCES = \
 	$(src_test_fuzz_fuzz_socks_SOURCES)
-src_test_fuzz_liboss_fuzz_socks_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_socks_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_socks_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_socks_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_strops_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_strops_la_SOURCES = \
 	$(src_test_fuzz_fuzz_strops_SOURCES)
-src_test_fuzz_liboss_fuzz_strops_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_strops_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_strops_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_strops_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
-src_test_fuzz_liboss_fuzz_vrs_a_SOURCES = \
+src_test_fuzz_liboss_fuzz_vrs_la_SOURCES = \
 	$(src_test_fuzz_fuzz_vrs_SOURCES)
-src_test_fuzz_liboss_fuzz_vrs_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
-src_test_fuzz_liboss_fuzz_vrs_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+src_test_fuzz_liboss_fuzz_vrs_la_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_vrs_la_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 OSS_FUZZ_FUZZERS = \
-	src/test/fuzz/liboss-fuzz-consensus.a \
-	src/test/fuzz/liboss-fuzz-descriptor.a \
-	src/test/fuzz/liboss-fuzz-diff.a \
-	src/test/fuzz/liboss-fuzz-diff-apply.a \
-	src/test/fuzz/liboss-fuzz-extrainfo.a \
-	src/test/fuzz/liboss-fuzz-hsdescv2.a \
-	src/test/fuzz/liboss-fuzz-hsdescv3.a \
-	src/test/fuzz/liboss-fuzz-http.a \
-	src/test/fuzz/liboss-fuzz-http-connect.a \
-	src/test/fuzz/liboss-fuzz-iptsv2.a \
-	src/test/fuzz/liboss-fuzz-microdesc.a \
-	src/test/fuzz/liboss-fuzz-socks.a \
-	src/test/fuzz/liboss-fuzz-strops.a \
-	src/test/fuzz/liboss-fuzz-vrs.a
+	src/test/fuzz/liboss-fuzz-consensus.la \
+	src/test/fuzz/liboss-fuzz-descriptor.la \
+	src/test/fuzz/liboss-fuzz-diff.la \
+	src/test/fuzz/liboss-fuzz-diff-apply.la \
+	src/test/fuzz/liboss-fuzz-extrainfo.la \
+	src/test/fuzz/liboss-fuzz-hsdescv2.la \
+	src/test/fuzz/liboss-fuzz-hsdescv3.la \
+	src/test/fuzz/liboss-fuzz-http.la \
+	src/test/fuzz/liboss-fuzz-http-connect.la \
+	src/test/fuzz/liboss-fuzz-iptsv2.la \
+	src/test/fuzz/liboss-fuzz-microdesc.la \
+	src/test/fuzz/liboss-fuzz-socks.la \
+	src/test/fuzz/liboss-fuzz-strops.la \
+	src/test/fuzz/liboss-fuzz-vrs.la
 
 else
 OSS_FUZZ_FUZZERS =
 endif
 
 noinst_PROGRAMS += $(FUZZERS) $(LIBFUZZER_FUZZERS)
-noinst_LIBRARIES += $(OSS_FUZZ_FUZZERS)
+noinst_LTLIBRARIES += $(OSS_FUZZ_FUZZERS)
 oss-fuzz-fuzzers:  oss-fuzz-prereqs $(OSS_FUZZ_FUZZERS)
 fuzzers: $(FUZZERS) $(LIBFUZZER_FUZZERS)
 

@@ -1,22 +1,22 @@
 
-noinst_LIBRARIES += src/lib/libtor-container.a
+noinst_LTLIBRARIES += src/lib/libtor-container.la
 
 if UNITTESTS_ENABLED
-noinst_LIBRARIES += src/lib/libtor-container-testing.a
+noinst_LTLIBRARIES += src/lib/libtor-container-testing.la
 endif
 
 # ADD_C_FILE: INSERT SOURCES HERE.
-src_lib_libtor_container_a_SOURCES =			\
+src_lib_libtor_container_la_SOURCES =			\
 	src/lib/container/bloomfilt.c			\
 	src/lib/container/map.c				\
 	src/lib/container/namemap.c			\
 	src/lib/container/order.c			\
 	src/lib/container/smartlist.c
 
-src_lib_libtor_container_testing_a_SOURCES = \
-	$(src_lib_libtor_container_a_SOURCES)
-src_lib_libtor_container_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
-src_lib_libtor_container_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+src_lib_libtor_container_testing_la_SOURCES = \
+	$(src_lib_libtor_container_la_SOURCES)
+src_lib_libtor_container_testing_la_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_container_testing_la_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
 # ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\

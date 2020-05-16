@@ -1,6 +1,6 @@
 
-noinst_LIBRARIES += \
-	src/lib/libtor-trace.a
+noinst_LTLIBRARIES += \
+	src/lib/libtor-trace.la
 
 # ADD_C_FILE: INSERT HEADERS HERE.
 TRACEHEADERS = \
@@ -13,7 +13,7 @@ TRACEHEADERS += \
 endif
 
 # ADD_C_FILE: INSERT SOURCES HERE.
-src_lib_libtor_trace_a_SOURCES = \
+src_lib_libtor_trace_la_SOURCES = \
 	src/lib/trace/trace.c
 
 noinst_HEADERS+= $(TRACEHEADERS)

@@ -5,7 +5,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-noinst_LIBRARIES=
+noinst_LTLIBRARIES=
 EXTRA_DIST=
 noinst_HEADERS=
 bin_PROGRAMS=
@@ -14,6 +14,7 @@ CLEANFILES=
 TESTS=
 noinst_PROGRAMS=
 DISTCLEANFILES=
+lib_LTLIBRARIES=
 bin_SCRIPTS=
 AM_CPPFLAGS=\
 	-I$(top_srcdir)/src \
@@ -43,77 +44,77 @@ endif
 
 # "Common" libraries used to link tor's utility code.
 TOR_UTIL_LIBS = \
-        src/lib/libtor-geoip.a \
-	src/lib/libtor-process.a \
-        src/lib/libtor-buf.a \
-	src/lib/libtor-confmgt.a \
-	src/lib/libtor-pubsub.a \
-	src/lib/libtor-dispatch.a \
-	src/lib/libtor-time.a \
-	src/lib/libtor-fs.a \
-	src/lib/libtor-encoding.a \
-	src/lib/libtor-sandbox.a \
-	src/lib/libtor-container.a \
-	src/lib/libtor-net.a \
-	src/lib/libtor-thread.a \
-	src/lib/libtor-memarea.a \
-	src/lib/libtor-math.a \
-	src/lib/libtor-meminfo.a \
-	src/lib/libtor-osinfo.a \
-	src/lib/libtor-log.a \
-	src/lib/libtor-lock.a \
-	src/lib/libtor-fdio.a \
-	src/lib/libtor-string.a \
-	src/lib/libtor-term.a \
-	src/lib/libtor-smartlist-core.a \
-	src/lib/libtor-malloc.a \
-	src/lib/libtor-wallclock.a \
-	src/lib/libtor-err.a \
-	src/lib/libtor-version.a \
-	src/lib/libtor-llharden.a \
-	src/lib/libtor-intmath.a \
-	src/lib/libtor-ctime.a
+	src/lib/libtor-geoip.la \
+	src/lib/libtor-process.la \
+	src/lib/libtor-buf.la \
+	src/lib/libtor-confmgt.la \
+	src/lib/libtor-pubsub.la \
+	src/lib/libtor-dispatch.la \
+	src/lib/libtor-time.la \
+	src/lib/libtor-fs.la \
+	src/lib/libtor-encoding.la \
+	src/lib/libtor-sandbox.la \
+	src/lib/libtor-container.la \
+	src/lib/libtor-net.la \
+	src/lib/libtor-thread.la \
+	src/lib/libtor-memarea.la \
+	src/lib/libtor-math.la \
+	src/lib/libtor-meminfo.la \
+	src/lib/libtor-osinfo.la \
+	src/lib/libtor-log.la \
+	src/lib/libtor-lock.la \
+	src/lib/libtor-fdio.la \
+	src/lib/libtor-string.la \
+	src/lib/libtor-term.la \
+	src/lib/libtor-smartlist-core.la \
+	src/lib/libtor-malloc.la \
+	src/lib/libtor-wallclock.la \
+	src/lib/libtor-err.la \
+	src/lib/libtor-version.la \
+	src/lib/libtor-llharden.la \
+	src/lib/libtor-intmath.la \
+	src/lib/libtor-ctime.la
 
 # Variants of the above for linking the testing variant of tor (for coverage
 # and tests)
 if UNITTESTS_ENABLED
 TOR_UTIL_TESTING_LIBS = \
-        src/lib/libtor-geoip-testing.a \
-	src/lib/libtor-process-testing.a \
-        src/lib/libtor-buf-testing.a \
-	src/lib/libtor-confmgt-testing.a \
-	src/lib/libtor-pubsub-testing.a \
-	src/lib/libtor-dispatch-testing.a \
-	src/lib/libtor-time-testing.a \
-	src/lib/libtor-fs-testing.a \
-	src/lib/libtor-encoding-testing.a \
-	src/lib/libtor-sandbox-testing.a \
-	src/lib/libtor-container-testing.a \
-	src/lib/libtor-net-testing.a \
-	src/lib/libtor-thread-testing.a \
-	src/lib/libtor-memarea-testing.a \
-	src/lib/libtor-math-testing.a \
-	src/lib/libtor-meminfo-testing.a \
-	src/lib/libtor-osinfo-testing.a \
-	src/lib/libtor-term-testing.a \
-	src/lib/libtor-log-testing.a \
-	src/lib/libtor-lock-testing.a \
-	src/lib/libtor-fdio-testing.a \
-	src/lib/libtor-string-testing.a \
-	src/lib/libtor-smartlist-core-testing.a \
-	src/lib/libtor-malloc-testing.a \
-	src/lib/libtor-wallclock-testing.a \
-	src/lib/libtor-err-testing.a \
-	src/lib/libtor-version-testing.a \
-	src/lib/libtor-llharden-testing.a \
-	src/lib/libtor-intmath.a \
-	src/lib/libtor-ctime-testing.a
+	src/lib/libtor-geoip-testing.la \
+	src/lib/libtor-process-testing.la \
+	src/lib/libtor-buf-testing.la \
+	src/lib/libtor-confmgt-testing.la \
+	src/lib/libtor-pubsub-testing.la \
+	src/lib/libtor-dispatch-testing.la \
+	src/lib/libtor-time-testing.la \
+	src/lib/libtor-fs-testing.la \
+	src/lib/libtor-encoding-testing.la \
+	src/lib/libtor-sandbox-testing.la \
+	src/lib/libtor-container-testing.la \
+	src/lib/libtor-net-testing.la \
+	src/lib/libtor-thread-testing.la \
+	src/lib/libtor-memarea-testing.la \
+	src/lib/libtor-math-testing.la \
+	src/lib/libtor-meminfo-testing.la \
+	src/lib/libtor-osinfo-testing.la \
+	src/lib/libtor-term-testing.la \
+	src/lib/libtor-log-testing.la \
+	src/lib/libtor-lock-testing.la \
+	src/lib/libtor-fdio-testing.la \
+	src/lib/libtor-string-testing.la \
+	src/lib/libtor-smartlist-core-testing.la \
+	src/lib/libtor-malloc-testing.la \
+	src/lib/libtor-wallclock-testing.la \
+	src/lib/libtor-err-testing.la \
+	src/lib/libtor-version-testing.la \
+	src/lib/libtor-llharden-testing.la \
+	src/lib/libtor-intmath.la \
+	src/lib/libtor-ctime-testing.la
 endif
 
 # Internal crypto libraries used in Tor
 TOR_CRYPTO_LIBS = \
-	src/lib/libtor-tls.a \
-	src/lib/libtor-crypt-ops.a \
+	src/lib/libtor-tls.la \
+	src/lib/libtor-crypt-ops.la \
 	$(LIBKECCAK_TINY) \
 	$(LIBDONNA)
 
@@ -121,33 +122,33 @@ TOR_CRYPTO_LIBS = \
 # and tests)
 if UNITTESTS_ENABLED
 TOR_CRYPTO_TESTING_LIBS = \
-	src/lib/libtor-tls-testing.a \
-	src/lib/libtor-crypt-ops-testing.a \
+	src/lib/libtor-tls-testing.la \
+	src/lib/libtor-crypt-ops-testing.la \
 	$(LIBKECCAK_TINY) \
 	$(LIBDONNA)
 endif
 
 # All static libraries used to link tor.
 TOR_INTERNAL_LIBS = \
-	src/core/libtor-app.a \
-	src/lib/libtor-compress.a \
-	src/lib/libtor-evloop.a \
+	src/core/libtor-app.la \
+	src/lib/libtor-compress.la \
+	src/lib/libtor-evloop.la \
 	$(TOR_CRYPTO_LIBS) \
 	$(TOR_UTIL_LIBS) \
-	src/trunnel/libor-trunnel.a \
-	src/lib/libtor-trace.a
+	src/trunnel/libor-trunnel.la \
+	src/lib/libtor-trace.la
 
 # Variants of the above for linking the testing variant of tor (for coverage
 # and tests)
 if UNITTESTS_ENABLED
 TOR_INTERNAL_TESTING_LIBS = \
-	src/core/libtor-app-testing.a \
-	src/lib/libtor-compress-testing.a \
-	src/lib/libtor-evloop-testing.a \
+	src/core/libtor-app-testing.la \
+	src/lib/libtor-compress-testing.la \
+	src/lib/libtor-evloop-testing.la \
 	$(TOR_CRYPTO_TESTING_LIBS) \
 	$(TOR_UTIL_TESTING_LIBS) \
-	src/trunnel/libor-trunnel-testing.a \
-	src/lib/libtor-trace.a
+	src/trunnel/libor-trunnel-testing.la \
+	src/lib/libtor-trace.la
 endif
 
 TOR_LDFLAGS_CRYPTLIB=@TOR_LDFLAGS_openssl@

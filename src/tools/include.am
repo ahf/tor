@@ -66,8 +66,8 @@ endif
 endif
 
 if BUILD_LIBTORRUNNER
-noinst_LIBRARIES += src/tools/libtorrunner.a
-src_tools_libtorrunner_a_SOURCES = \
+noinst_LTLIBRARIES += src/tools/libtorrunner.la
+src_tools_libtorrunner_la_SOURCES = \
         src/tools/tor_runner.c \
         src/feature/api/tor_api.c
 endif

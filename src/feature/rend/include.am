@@ -1,6 +1,6 @@
 
 # ADD_C_FILE: INSERT SOURCES HERE.
-LIBTOR_APP_A_SOURCES += 			\
+LIBTOR_APP_LA_SOURCES += 			\
 	src/feature/rend/rendcache.c		\
 	src/feature/rend/rendclient.c		\
 	src/feature/rend/rendcommon.c		\

@@ -1,6 +1,6 @@
 
 # ADD_C_FILE: INSERT SOURCES HERE.
-LIBTOR_APP_A_SOURCES += 			\
+LIBTOR_APP_LA_SOURCES += 			\
 	src/app/main/main.c			\
 	src/app/main/shutdown.c			\
 	src/app/main/subsystem_list.c		\
@@ -14,5 +14,5 @@ noinst_HEADERS +=					\
 	src/app/main/subsysmgr.h
 
 if BUILD_NT_SERVICES
-LIBTOR_APP_A_SOURCES += src/app/main/ntmain.c
+LIBTOR_APP_LA_SOURCES += src/app/main/ntmain.c
 endif

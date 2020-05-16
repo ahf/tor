@@ -1,6 +1,6 @@
 
 # ADD_C_FILE: INSERT SOURCES HERE.
-LIBTOR_APP_A_SOURCES += 				\
+LIBTOR_APP_LA_SOURCES += 				\
 	src/core/or/address_set.c		\
 	src/core/or/channel.c			\
 	src/core/or/channelpadding.c		\

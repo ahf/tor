@@ -80,6 +80,8 @@ AC_ARG_ENABLE(nss,
    AS_HELP_STRING(--enable-nss, [Use Mozilla's NSS TLS library. (EXPERIMENTAL)]))
 AC_ARG_ENABLE(pic,
    AS_HELP_STRING(--enable-pic, [Build Tor's binaries as position-independent code, suitable to link as a library.]))
+AC_ARG_ENABLE(libtor,
+   AS_HELP_STRING(--enable-libtor, [Build Tor as a shared and static library.]))
 
 AC_ARG_ENABLE(missing-doc-warnings,
    AS_HELP_STRING(--enable-missing-doc-warnings, [Tell doxygen to warn about missing documentation. Makes doxygen warnings nonfatal.]))
@@ -111,6 +113,7 @@ AM_CONDITIONAL(OSS_FUZZ_ENABLED, test "x$enable_oss_fuzz" = "xyes")
 AM_CONDITIONAL(USE_RUST, test "x$enable_rust" = "xyes")
 AM_CONDITIONAL(USE_NSS, test "x$enable_nss" = "xyes")
 AM_CONDITIONAL(USE_OPENSSL, test "x$enable_nss" != "xyes")
+AM_CONDITIONAL(LIBTOR_ENABLED, test "x$enable_libtor" != "xyes")
 
 if test "x$enable_nss" = "xyes"; then
   AC_DEFINE(ENABLE_NSS, 1,
@@ -1209,6 +1212,12 @@ if test "x$have_zstd" = "xyes"; then
 fi
 AC_SUBST(TOR_ZSTD_CFLAGS)
 AC_SUBST(TOR_ZSTD_LIBS)
+
+if test "x$enable_libtor" = "xyes"; then
+    if test "x$enable_pic" != "xyes"; then
+        AC_MSG_ERROR([--enable-libtor requires --enable-pic.])
+    fi
+fi
 
 dnl ----------------------------------------------------------------------
 dnl Check if libcap is available for capabilities.
@@ -2628,6 +2637,9 @@ PPRINT_PROP_BOOL([Cargo Online Fetch (--enable-cargo-online-mode)], $value)
 
 test "x$enable_android" = "xyes" && value=1 || value=0
 PPRINT_PROP_BOOL([Android support (--enable-android)], $value)
+
+test "x$enable_libtor" = "xyes" && value=1 || value=0
+PPRINT_PROP_BOOL([Libtor support (--enable-libtor)], $value)
 
 AS_ECHO
 PPRINT_SUBTITLE([Static Build])

@@ -1,9 +1,9 @@
-noinst_LIBRARIES += \
-	src/trunnel/libor-trunnel.a
+noinst_LTLIBRARIES += \
+	src/trunnel/libor-trunnel.la
 
 if UNITTESTS_ENABLED
-noinst_LIBRARIES += \
-	src/trunnel/libor-trunnel-testing.a
+noinst_LTLIBRARIES += \
+	src/trunnel/libor-trunnel-testing.la
 endif
 
 TRUNNELINPUTS = \
@@ -47,18 +47,18 @@ TRUNNELHEADERS = \
 	src/trunnel/netinfo.h \
 	src/trunnel/circpad_negotiation.h
 
-src_trunnel_libor_trunnel_a_SOURCES = $(TRUNNELSOURCES)
-src_trunnel_libor_trunnel_a_CPPFLAGS = \
+src_trunnel_libor_trunnel_la_SOURCES = $(TRUNNELSOURCES)
+src_trunnel_libor_trunnel_la_CPPFLAGS = \
 	-DTRUNNEL_LOCAL_H $(AM_CPPFLAGS) -I$(top_srcdir)/src/trunnel
 
 if UNITTESTS_ENABLED
-src_trunnel_libor_trunnel_testing_a_SOURCES = $(TRUNNELSOURCES)
+src_trunnel_libor_trunnel_testing_la_SOURCES = $(TRUNNELSOURCES)
 else
-src_trunnel_libor_trunnel_testing_a_SOURCES =
+src_trunnel_libor_trunnel_testing_la_SOURCES =
 endif
 
-src_trunnel_libor_trunnel_testing_a_CPPFLAGS = -DTRUNNEL_LOCAL_H $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
-src_trunnel_libor_trunnel_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+src_trunnel_libor_trunnel_testing_la_CPPFLAGS = -DTRUNNEL_LOCAL_H $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_trunnel_libor_trunnel_testing_la_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
 noinst_HEADERS+= $(TRUNNELHEADERS)
 
