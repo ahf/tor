@@ -113,7 +113,7 @@ AM_CONDITIONAL(OSS_FUZZ_ENABLED, test "x$enable_oss_fuzz" = "xyes")
 AM_CONDITIONAL(USE_RUST, test "x$enable_rust" = "xyes")
 AM_CONDITIONAL(USE_NSS, test "x$enable_nss" = "xyes")
 AM_CONDITIONAL(USE_OPENSSL, test "x$enable_nss" != "xyes")
-AM_CONDITIONAL(LIBTOR_ENABLED, test "x$enable_libtor" != "xyes")
+AM_CONDITIONAL(LIBTOR_ENABLED, test "x$enable_libtor" = "xyes")
 
 if test "x$enable_nss" = "xyes"; then
   AC_DEFINE(ENABLE_NSS, 1,
