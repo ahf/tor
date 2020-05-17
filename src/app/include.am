@@ -12,7 +12,7 @@ noinst_LTLIBRARIES += src/app/libtor.la
 endif
 
 src_app_libtor_la_SOURCES =
-src_app_libtor_la_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB) @TOR_LDFLAGS_libevent@
+src_app_libtor_la_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB) @TOR_LDFLAGS_libevent@ -version-info @LIBTOR_VERSION@
 src_app_libtor_la_LIBADD = $(TOR_INTERNAL_LIBS) \
 	$(rust_ldadd) \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ $(TOR_LIBS_CRYPTLIB) \

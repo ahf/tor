@@ -19,6 +19,10 @@ configure_flags="$*"
 AC_DEFINE(APPROX_RELEASE_DATE, ["2020-02-11"], # for 0.4.4.0-alpha-dev
           [Approximate date when this software was released. (Updated when the version changes.)])
 
+# Define our shared library version.
+LIBTOR_VERSION="4:4:0"
+AC_SUBST(LIBTOR_VERSION)
+
 # "foreign" means we don't follow GNU package layout standards
 # "1.11" means we require automake version 1.11 or newer
 # "subdir-objects" means put .o files in the same directory as the .c files
