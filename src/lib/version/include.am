@@ -17,8 +17,8 @@ src_lib_libtor_version_testing_la_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
 # Declare that these object files depend on micro-revision.i.  Without this
 # rule, we could try to build them before micro-revision.i was created.
-src/lib/version/git_revision.$(OBJEXT) \
-  src/lib/version/src_lib_libtor_version_testing_a-git_revision.$(OBJEXT): \
+src/lib/version/git_revision.lo \
+  src/lib/version/src_lib_libtor_version_testing_a-git_revision.lo: \
 	micro-revision.i
 
 # ADD_C_FILE: INSERT HEADERS HERE.
