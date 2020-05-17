@@ -8,6 +8,8 @@
 *.o
 *.a
 *.obj
+*.lo
+*.la
 # Diff droppings
 *.orig
 *.rej
