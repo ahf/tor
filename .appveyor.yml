@@ -65,12 +65,7 @@ install:
      # All installed library dlls must be copied to the test and app
      # directories, before running tor's tests. (See below.)
      #>
-
-     # We have to install zstd first for pacman to unpack .zst packages.
-    Execute-Command "C:\msys64\usr\bin\pacman" -Sy --verbose --needed --noconfirm zstd;
-
-    # Install packages needed to build Tor.
-    Execute-Command "C:\msys64\usr\bin\pacman" -Sy --verbose --needed --noconfirm ${env:mingw_prefix}-libevent ${env:mingw_prefix}-openssl ${env:mingw_prefix}-pkg-config ${env:mingw_prefix}-xz ${env:mingw_prefix}-zstd ;
+    Execute-Command "C:\msys64\usr\bin\pacman" -Syu --verbose --needed --noconfirm zstd ${env:mingw_prefix}-libevent ${env:mingw_prefix}-openssl ${env:mingw_prefix}-pkg-config ${env:mingw_prefix}-xz ${env:mingw_prefix}-zstd ;
 
 build_script:
 - ps: >-
