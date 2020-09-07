@@ -1,0 +1,4 @@
+  o Minor bugfixes (build system):
+    - Don't enable -Wextra-semi as that only applies to Objective-C and C++
+      code and breaks newer GCC's together with -Werror. Fixes bug 40119;
+      bugfix on 0.2.9.1-alpha.
