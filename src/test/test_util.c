@@ -4669,7 +4669,7 @@ test_util_get_glob_opened_files(void *ptr)
 {
   (void)ptr;
 
-#if HAVE_GLOB
+#ifdef HAVE_GLOB
   smartlist_t *results = NULL;
   int r, i;
   char *dir1 = NULL, *dir2 = NULL, *forbidden = NULL, *dirname = NULL;
