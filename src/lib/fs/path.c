@@ -532,7 +532,7 @@ unglob_win32(const char *pattern, int prev_sep, int next_sep)
   tor_free(path_until_glob);
   return result;
 }
-#elif HAVE_GLOB /* !defined(_WIN32) */
+#elif HAVE_GLOB
 /** Same as opendir but calls sandbox_intern_string before */
 static DIR *
 prot_opendir(const char *name)
